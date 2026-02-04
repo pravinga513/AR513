@@ -165,7 +165,7 @@
                 </div>
                 <div class="space-y-1">
                     <label class="text-[10px] uppercase text-zinc-500 font-black ml-2 tracking-widest">Password</label>
-                    <input type="password" id="auth-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm outline-none focus:border-yellow-500 text-white transition-all" placeholder="••••••••">
+                    <input type="password" id="auth-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm outline-none focus:border-yellow-500 text-white transition-all" placeholder="At least 6 characters">
                 </div>
                 <button type="submit" id="auth-submit" class="btn-primary w-full py-5 rounded-2xl flex justify-center items-center gap-3 active:scale-95 transition-all">
                     <span id="auth-btn-text" class="uppercase tracking-widest text-xs">Verify Hub Identity</span>
@@ -320,6 +320,7 @@
             user = data.session?.user || null;
             updateNav();
             checkUrlParams();
+            updateDBStatus();
         };
 
         function updateNav() {
@@ -327,6 +328,18 @@
             const userNav = document.getElementById('nav-user');
             if(guestNav) guestNav.classList.toggle('hidden', !!user);
             if(userNav) userNav.classList.toggle('hidden', !user);
+        }
+
+        function updateDBStatus() {
+            const dot = document.getElementById('db-status-dot');
+            const text = document.getElementById('db-status-text');
+            if (user) {
+                dot.className = "w-2 h-2 rounded-full bg-green-500";
+                text.innerText = "Linked to Cloud";
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-red-500";
+                text.innerText = "Logged Out";
+            }
         }
 
         function navigateTo(viewName) {
@@ -382,19 +395,24 @@
 
                 if (res.error) throw res.error;
                 
-                // Optimized logic: If the dashboard setting is OFF, res.data.session exists instantly.
                 if (res.data.user && res.data.session) {
                     user = res.data.user;
                     updateNav();
+                    updateDBStatus();
                     navigateTo('dashboard');
                     showToast("Nexus Verified", "success");
                 } else if (res.data.user && !res.data.session) {
-                    // This happens if "Confirm Email" is still ON in Supabase
                     showToast("Account Created. Please check your email inbox.", "success");
                     navigateTo('login');
                 }
             } catch (err) {
-                showToast(err.message, "error");
+                // Specific helpful messages for common Supabase errors
+                let msg = err.message;
+                if (msg.includes("blocked by client")) msg = "Error: Connection blocked. Please disable your Ad-Blocker.";
+                if (msg.includes("Invalid login credentials")) msg = "Error: Invalid email or password.";
+                if (msg.includes("Signup requires a minimum password length")) msg = "Error: Password must be at least 6 characters.";
+                
+                showToast(msg, "error");
             } finally {
                 if(loader) loader.classList.add('hidden');
                 if(btnText) btnText.classList.remove('hidden');
@@ -405,6 +423,7 @@
             await supabaseClient.auth.signOut();
             user = null;
             updateNav();
+            updateDBStatus();
             navigateTo('landing');
             showToast("Nexus Disconnected", "success");
         }
@@ -413,7 +432,15 @@
             if (!user) return;
             const grid = document.getElementById('decks-grid');
             if(!grid) return;
-            const { data } = await supabaseClient.from('cards').select('*').order('updated_at', { ascending: false });
+            grid.innerHTML = '<div class="col-span-full py-10 text-center text-zinc-500 uppercase font-black text-xs">Accessing Nexus...</div>';
+            
+            const { data, error } = await supabaseClient.from('cards').select('*').order('updated_at', { ascending: false });
+            
+            if (error) {
+                showToast("Nexus Connection Error: Check if 'cards' table exists.", "error");
+                return;
+            }
+
             grid.innerHTML = (data || []).map(deck => `
                 <div class="glass p-8 rounded-[40px] border border-white/5 hover:border-yellow-500/50 transition-all duration-500">
                     <div class="h-24 bg-zinc-900/50 rounded-2xl mb-6 flex items-center justify-center">
@@ -512,14 +539,25 @@
             const status = document.getElementById('db-status-text');
             const dot = document.getElementById('db-status-dot');
             if(btn) btn.innerText = "Syncing...";
+            
             try {
-                const { error } = await supabaseClient.from('cards').upsert({ id: currentCardId, user_id: user.id, config: appData, updated_at: new Date().toISOString() });
+                const { error } = await supabaseClient.from('cards').upsert({ 
+                    id: currentCardId, 
+                    user_id: user.id, 
+                    config: appData, 
+                    updated_at: new Date().toISOString() 
+                });
+                
                 if (error) throw error;
+                
                 showToast("Nexus Synced", "success");
                 if(status) status.innerText = "Cloud Updated";
                 if(dot) dot.className = "w-2 h-2 rounded-full bg-green-500";
             } catch (e) { 
-                showToast("Sync Fault", "error"); 
+                console.error("Save error:", e);
+                let msg = e.message;
+                if (msg.includes("400")) msg = "Error 400: Check if 'cards' table and columns exist in Supabase.";
+                showToast(msg, "error"); 
             } finally {
                 if(btn) btn.innerText = "Push to Cloud";
             }
