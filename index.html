@@ -1,33 +1,53 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  
-  <body style="margin: 0px; overflow: hidden;">
+<head>
+    <title>Pravinga513 AR Portfolio</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+    <script>
+        AFRAME.registerComponent('clickhandler', {
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    // This opens the link in a new tab
+                    window.open('https://www.instagram.com/pravinga513', '_blank');
+                });
+            }
+        });
+    </script>
+
     <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
-      
-   <a-marker preset="hiro">
         
-        <a-entity position="0 0.5 -0.5" rotation="-60 0 0">
-          
-          <a-plane width="2" height="1.2" color="#111" opacity="0.8">
-            
-            <a-text value="PRAVINGA513" position="0 0.3 0.1" align="center" color="#FFD700" width="4"></a-text>
-            <a-text value="Web & Game Universe" position="0 0 0.1" align="center" color="white" width="2.5"></a-text>
-            
-            <a-sphere position="-0.6 -0.3 0.1" radius="0.08" color="#4CC3D9"></a-sphere>
-            <a-sphere position="0.6 -0.3 0.1" radius="0.08" color="#4CC3D9"></a-sphere>
-            
-          </a-plane>
+        <a-marker preset="hiro">
+            <a-entity position="0 0.5 -0.8" rotation="-60 0 0">
+                <a-plane width="2.5" height="1.5" color="#111" opacity="0.9">
+                    <a-text value="PRAVINGA513" align="center" position="0 0.4 0.1" color="#FFD700" width="5"></a-text>
+                    <a-text value="Web & Game Universe" align="center" position="0 0.1 0.1" width="3"></a-text>
+                    
+                    <a-plane 
+                        class="clickable" 
+                        clickhandler 
+                        position="0 -0.4 0.1" 
+                        width="1.2" height="0.3" 
+                        color="#E1306C">
+                        <a-text value="FOLLOW ON INSTA" align="center" color="white" width="3"></a-text>
+                    </a-plane>
+                </a-plane>
 
-          <a-torus-knot radius="0.1" radius-tubular="0.01" position="1 0.5 0.2" color="gold"
-            animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
-          </a-torus-knot>
-        </a-entity>
+                <a-torus-knot radius="0.1" radius-tubular="0.01" position="1 0.6 0.2" color="gold"
+                    animation="property: rotation; to: 0 360 0; loop: true; dur: 5000">
+                </a-torus-knot>
+            </a-entity>
+        </a-marker>
 
-      </a-marker>
-      
-      <a-entity camera></a-entity>
+        <a-entity camera>
+            <a-entity 
+                cursor="rayOrigin: mouse" 
+                raycaster="objects: .clickable">
+            </a-entity>
+        </a-camera>
     </a-scene>
-  </body>
+</body>
 </html>
