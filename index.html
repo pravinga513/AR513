@@ -1,531 +1,343 @@
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection } from 'firebase/firestore';
-import { 
-  CreditCard, 
-  Layers, 
-  Download, 
-  Save, 
-  Smartphone, 
-  User, 
-  Link as LinkIcon, 
-  Palette, 
-  ExternalLink,
-  Info,
-  ChevronRight,
-  Printer,
-  RefreshCw
-} from 'lucide-react';
-
-// --- Firebase Configuration ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'vingadeck-studio';
-
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [view, setView] = useState('create'); // 'create', 'live-ar'
-  const [tab, setTab] = useState('ar'); // 'physical', 'ar'
-  const [loading, setLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
-  
-  // Card State
-  const [cardId, setCardId] = useState(Math.random().toString(36).substring(2, 9).toUpperCase());
-  const [data, setData] = useState({
-    // Physical Card Data
-    cardHolder: "PRAVINGA 513",
-    brandTitle: "PG513 UNIVERSE",
-    cardColor: "#ffffff",
-    textColor: "#000000",
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VingaDeck Studio | AR Business Card Creator</title>
     
-    // AR Experience Data
-    arTitle: "PRAVINGA 513",
-    arSubtitle: "Interactive Portfolio",
-    themeColor: "#FFD700",
-    panelOpacity: 0.9,
-    tiltAngle: -60,
-    insta: "pravinga513",
-    yt: "games513",
-    web: "pg513.github.io"
-  });
-
-  // Check for existing ID in URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    const mode = params.get('view');
+    <!-- Frameworks & Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    if (id) {
-      setCardId(id);
-      loadCardData(id);
-      if (mode === 'ar') {
-        setView('live-ar');
-      }
-    }
-  }, []);
-
-  // Firebase Auth (Rule 3)
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) {
-        console.error("Auth error", err);
-      }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  const loadCardData = async (id) => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setData(docSnap.data());
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
-  };
-
-  const saveCard = async () => {
-    if (!user) return;
-    setLoading(true);
-    setSaveStatus('Saving...');
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', cardId);
-      await setDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
-      setSaveStatus('Saved Successfully!');
-      setTimeout(() => setSaveStatus(''), 3000);
-    } catch (e) {
-      setSaveStatus('Error saving.');
-      console.error(e);
-    }
-    setLoading(false);
-  };
-
-  const updateField = (field, value) => {
-    setData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const cardPublicUrl = `${window.location.origin}${window.location.pathname}?view=ar&id=${cardId}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(cardPublicUrl)}&size=200x200&bgcolor=ffffff`;
-
-  // If view is 'live-ar', show the actual A-Frame Experience
-  if (view === 'live-ar') {
-    return (
-      <div className="w-full h-screen bg-black">
-         <div className="absolute top-4 left-4 z-50 flex gap-2">
-            <button onClick={() => setView('create')} className="bg-white/20 backdrop-blur text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
-              <ChevronRight className="rotate-180" size={16} /> Exit AR View
-            </button>
-         </div>
-         <iframe 
-            srcDoc={`
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-                  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-                </head>
-                <body style="margin: 0; overflow: hidden;">
-                  <script>
-                    AFRAME.registerComponent('link-to', {
-                      schema: { url: {type: 'string'} },
-                      init: function () {
-                        this.el.addEventListener('click', () => { window.open(this.data.url, '_blank'); });
-                      }
-                    });
-                  </script>
-                  <a-scene embedded arjs="debugUIEnabled: false; trackingMethod: best;">
-                    <a-marker preset="hiro">
-                      <a-entity position="0 0.5 -0.8" rotation="${data.tiltAngle} 0 0">
-                        <a-plane width="2.8" height="1.8" color="#111" opacity="${data.panelOpacity}" transparent="true">
-                          <a-text value="${data.arTitle}" align="center" position="0 0.5 0.1" color="${data.themeColor}" width="5" font="exo2bold"></a-text>
-                          <a-text value="${data.arSubtitle}" align="center" position="0 0.15 0.1" color="white" width="3"></a-text>
-                          
-                          <a-plane class="clickable" link-to="url: https://instagram.com/${data.insta}" position="-0.7 -0.4 0.1" width="1" height="0.3" color="#E1306C">
-                            <a-text value="INSTAGRAM" align="center" color="white" width="2.5"></a-text>
-                          </a-plane>
-                          
-                          <a-plane class="clickable" link-to="url: https://youtube.com/@${data.yt}" position="0.7 -0.4 0.1" width="1" height="0.3" color="#FF0000">
-                            <a-text value="YOUTUBE" align="center" color="white" width="2.5"></a-text>
-                          </a-plane>
-                        </a-plane>
-                        <a-torus-knot radius="0.1" radius-tubular="0.01" position="1.3 0.8 0.2" color="${data.themeColor}" animation="property: rotation; to: 0 360 0; loop: true; dur: 5000"></a-torus-knot>
-                      </a-entity>
-                    </a-marker>
-                    <a-entity camera>
-                      <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
-                    </a-entity>
-                  </a-scene>
-                </body>
-              </html>
-            `}
-            className="w-full h-full border-none"
-            allow="camera"
-         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex flex-col selection:bg-yellow-500/30">
-      {/* Header */}
-      <header className="border-b border-zinc-800 p-4 bg-zinc-900 sticky top-0 z-40 flex justify-between items-center no-print">
-        <div className="flex items-center gap-2">
-          <div className="bg-yellow-500 p-1.5 rounded-lg shadow-lg shadow-yellow-500/20">
-            <Layers size={20} className="text-black" />
-          </div>
-          <h1 className="font-bold tracking-tight text-lg">VINGADECK <span className="text-yellow-500">STUDIO</span></h1>
-        </div>
-        <div className="flex items-center gap-3">
-          {saveStatus && <span className="text-xs text-yellow-500 font-medium">{saveStatus}</span>}
-          <button 
-            onClick={saveCard}
-            disabled={loading}
-            className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all border border-zinc-700"
-          >
-            {loading ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
-            <span className="hidden sm:inline">Save</span>
-          </button>
-          <button 
-            onClick={() => window.print()}
-            className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-yellow-600/20 transition-all active:scale-95"
-          >
-            <Printer size={16} />
-            <span className="hidden sm:inline">Print Card</span>
-          </button>
-        </div>
-      </header>
-
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Editor Sidebar */}
-        <aside className="w-full md:w-96 border-r border-zinc-800 bg-zinc-900/50 flex flex-col overflow-y-auto no-print">
-          <div className="flex border-b border-zinc-800 sticky top-0 bg-zinc-900 z-10">
-            <button 
-              onClick={() => setTab('physical')}
-              className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${tab === 'physical' ? 'text-yellow-500 border-b-2 border-yellow-500 bg-zinc-800/50' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <CreditCard size={14} /> Physical
-            </button>
-            <button 
-              onClick={() => setTab('ar')}
-              className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${tab === 'ar' ? 'text-yellow-500 border-b-2 border-yellow-500 bg-zinc-800/50' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <Smartphone size={14} /> AR Experience
-            </button>
-          </div>
-
-          <div className="p-6 space-y-8 pb-20">
-            {tab === 'physical' ? (
-              <section className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Physical Design</h3>
-                  <div>
-                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Full Name</label>
-                    <input value={data.cardHolder} onChange={e => updateField('cardHolder', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Brand Name</label>
-                    <input value={data.brandTitle} onChange={e => updateField('brandTitle', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all" />
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t border-zinc-800">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Card Colors</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Background</label>
-                      <input type="color" value={data.cardColor} onChange={e => updateField('cardColor', e.target.value)} className="w-full h-10 rounded-lg bg-zinc-800 border border-zinc-700 cursor-pointer p-1" />
-                    </div>
-                    <div>
-                      <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Text</label>
-                      <input type="color" value={data.textColor} onChange={e => updateField('textColor', e.target.value)} className="w-full h-10 rounded-lg bg-zinc-800 border border-zinc-700 cursor-pointer p-1" />
-                    </div>
-                  </div>
-                </div>
-              </section>
-            ) : (
-              <section className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">AR Hologram</h3>
-                  <div>
-                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">3D Header</label>
-                    <input value={data.arTitle} onChange={e => updateField('arTitle', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">3D Subtitle</label>
-                    <input value={data.arSubtitle} onChange={e => updateField('arSubtitle', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all" />
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t border-zinc-800">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Social Links</h3>
-                  <div>
-                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Instagram @</label>
-                    <input value={data.insta} onChange={e => updateField('insta', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="username" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">YouTube Channel</label>
-                    <input value={data.yt} onChange={e => updateField('yt', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="channel handle" />
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t border-zinc-800">
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-[10px] uppercase text-zinc-500">Tilt Angle</label>
-                    <span className="text-xs text-yellow-500 font-mono font-bold">{data.tiltAngle}°</span>
-                  </div>
-                  <input type="range" min="-90" max="0" step="5" value={data.tiltAngle} onChange={e => updateField('tiltAngle', parseInt(e.target.value))} className="w-full accent-yellow-500" />
-                </div>
-              </section>
-            )}
-
-            <div className="pt-8 space-y-3">
-              <div className="flex items-center gap-2 text-zinc-500 text-xs">
-                <Info size={12} />
-                <span>Card ID: <span className="text-white font-mono">{cardId}</span></span>
-              </div>
-              <p className="text-[10px] text-zinc-600 leading-relaxed italic">
-                * Your AR experience will be anchored to the HIRO marker automatically generated on the physical card.
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Live Preview Area */}
-        <section className="flex-1 bg-zinc-950 flex flex-col items-center justify-center p-4 relative overflow-y-auto">
-          <div className="no-print absolute top-8 text-center">
-            <h2 className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">Workspace Preview</h2>
-            <p className="text-zinc-400 text-xs">Visualizing your {tab === 'physical' ? 'Physical Design' : 'AR Hologram'}</p>
-          </div>
-
-          {/* THE MOCKUP VIEW */}
-          <div className="relative group perspective-1000 mt-12 print:mt-0 print:p-0">
-            {tab === 'physical' ? (
-              /* Physical Card Design View */
-              <div className="flex flex-col gap-12 items-center print:flex-col print:justify-center">
-                {/* Front Side */}
-                <div 
-                  id="card-front"
-                  className="w-[340px] h-[200px] rounded-2xl shadow-2xl relative overflow-hidden flex flex-col p-8 print:border print:border-zinc-300 print:shadow-none"
-                  style={{ backgroundColor: data.cardColor, color: data.textColor }}
-                >
-                  <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-black/5 rounded-full"></div>
-                  <div className="flex-1 flex flex-col justify-end">
-                    <h2 className="text-3xl font-black italic mb-0 leading-tight tracking-tight">{data.cardHolder}</h2>
-                    <p className="text-[10px] opacity-70 uppercase tracking-[0.2em] font-bold">{data.brandTitle}</p>
-                  </div>
-                  <div className="flex justify-between items-end mt-6 pt-4 border-t border-current/10">
-                    <div className="text-[9px] font-mono opacity-40 tracking-wider">VINGA-ID: {cardId}</div>
-                    <div className="w-10 h-10 bg-current/5 rounded-xl flex items-center justify-center font-black text-xs">513</div>
-                  </div>
-                </div>
-
-                {/* Back Side (QR + Marker) */}
-                <div 
-                  id="card-back"
-                  className="w-[340px] h-[200px] bg-white rounded-2xl shadow-2xl relative overflow-hidden flex items-center p-6 border border-zinc-200 print:shadow-none"
-                >
-                   {/* HIRO MARKER (Black Border) */}
-                   <div className="w-[140px] h-[140px] bg-black p-4 rounded-lg flex items-center justify-center shrink-0">
-                      <div className="w-full h-full bg-white p-3 flex flex-col items-center justify-center relative">
-                        {/* THE QR CODE */}
-                        <img 
-                          src={qrCodeUrl} 
-                          alt="AR QR Code" 
-                          className="w-full h-auto"
-                        />
-                        <div className="absolute -bottom-1 text-[8px] font-black text-black tracking-tighter uppercase">Point Camera</div>
-                      </div>
-                   </div>
-
-                   <div className="flex-1 pl-6">
-                      <h4 className="text-black text-[10px] font-black uppercase mb-1 tracking-widest opacity-40 italic">Instructions</h4>
-                      <p className="text-black text-[9px] leading-relaxed font-medium opacity-70">
-                        1. Scan QR to launch App<br/>
-                        2. Grant Camera Access<br/>
-                        3. View Card in 3D Space
-                      </p>
-                      <div className="mt-8 border-t border-zinc-100 pt-2">
-                         <div className="text-black text-[14px] font-black italic tracking-tighter">VingaDeck Studio</div>
-                         <div className="text-[8px] text-zinc-400 font-bold">BY PRAVINGA513</div>
-                      </div>
-                   </div>
-                </div>
-              </div>
-            ) : (
-              /* AR Experience Mockup View */
-              <div className="relative w-[340px] h-[480px] flex items-center justify-center select-none">
-                {/* Surface Marker Mock */}
-                <div className="absolute bottom-20 w-44 h-44 bg-black/40 p-4 rounded-xl rotate-x-60 backdrop-blur-sm border border-white/10">
-                  <div className="w-full h-full border-4 border-white/20 rounded flex items-center justify-center font-black text-white/20">HIRO</div>
-                </div>
-                
-                {/* Floating AR Screen */}
-                <div 
-                  className="w-80 h-48 rounded-2xl shadow-[0_0_80px_rgba(255,255,255,0.05)] flex flex-col p-6 border transition-all duration-700 ease-out"
-                  style={{ 
-                    backgroundColor: '#0a0a0a', 
-                    borderColor: data.themeColor,
-                    transform: `rotateX(${data.tiltAngle}deg) translateY(-100px) scale(1.05)`,
-                    opacity: data.panelOpacity,
-                    boxShadow: `0 0 30px ${data.themeColor}33`
-                  }}
-                >
-                  <div className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-black border border-white/20 shadow-xl flex items-center justify-center text-yellow-500">
-                    <Smartphone size={16} className="animate-pulse" />
-                  </div>
-
-                  <h3 className="text-2xl font-black italic text-center mb-1 tracking-tighter" style={{ color: data.themeColor }}>{data.arTitle}</h3>
-                  <p className="text-[10px] text-center text-zinc-400 mb-6 uppercase tracking-[0.3em] font-bold">{data.arSubtitle}</p>
-                  
-                  <div className="grid grid-cols-2 gap-3 mt-auto">
-                    <div className="h-8 rounded-lg bg-[#E1306C] flex items-center justify-center text-[8px] font-black tracking-widest uppercase">Instagram</div>
-                    <div className="h-8 rounded-lg bg-[#FF0000] flex items-center justify-center text-[8px] font-black tracking-widest uppercase">YouTube</div>
-                  </div>
-
-                  {/* Visual Guide Lines */}
-                  <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[1px] h-20 bg-gradient-to-t from-transparent via-yellow-500/20 to-yellow-500/50 animate-pulse"></div>
-                </div>
-                
-                {/* 3D Decoration Animation */}
-                <div className="absolute top-10 right-0 w-16 h-16 border border-white/5 rounded-full animate-spin-slow flex items-center justify-center">
-                   <div className="w-10 h-10 border border-yellow-500/30 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="no-print absolute bottom-12 flex flex-col sm:flex-row gap-4 w-full px-8 justify-center items-center">
-             <button 
-                onClick={() => setView('live-ar')}
-                className="bg-zinc-800 hover:bg-zinc-700 text-white text-xs px-8 py-3.5 rounded-full flex items-center gap-2 border border-zinc-700 transition-all font-bold group"
-             >
-                <Smartphone size={16} className="group-hover:scale-110 transition-transform" /> Launch AR Viewfinder
-             </button>
-             <a 
-                href={cardPublicUrl}
-                target="_blank"
-                className="bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-500 text-xs px-8 py-3.5 rounded-full flex items-center gap-2 border border-yellow-500/30 transition-all font-bold"
-             >
-                <ExternalLink size={16} /> Public Hub Link
-             </a>
-          </div>
-        </section>
-      </main>
-
-      {/* Print Overlay CSS */}
-      <style>{`
-        @media print {
-          body { background: white !important; color: black !important; }
-          .no-print { display: none !important; }
-          main, section, #card-front, #card-back, main * { visibility: visible !important; }
-          main { 
-            position: absolute !important; 
-            left: 0 !important; 
-            top: 0 !important; 
-            width: 100% !important; 
-            height: auto !important; 
-            display: flex !important; 
-            flex-direction: column !important; 
-            align-items: center !important; 
-            background: white !important; 
-            overflow: visible !important;
-          }
-          section { 
-            width: 100% !important; 
-            height: auto !important; 
-            padding: 20px !important; 
-            background: white !important;
-            overflow: visible !important;
-          }
-          #card-front, #card-back { 
-            box-shadow: none !important; 
-            border: 1px solid #ddd !important;
-            page-break-inside: avoid !important;
-            margin: 40px auto !important;
-            transform: none !important;
-          }
-        }
+    <!-- Lucide Icons (via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,700;0,900;1,900&display=swap');
         
+        body { font-family: 'Exo 2', sans-serif; }
         .perspective-1000 { perspective: 1000px; }
         .rotate-x-60 { transform: rotateX(60deg); }
-        .animate-spin-slow { animation: spin 8s linear infinite; }
+        .animate-spin-slow { animation: spin 12s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* Hide scrollbars for cleaner look */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-      `}</style>
-    </div>
-  );
-};
-
-export default App;<!DOCTYPE html>
-<html>
-<head>
-    <title>Pravinga513 AR Portfolio</title>
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-</head>
-
-<body style="margin: 0; overflow: hidden;">
-    <script>
-        AFRAME.registerComponent('clickhandler', {
-            init: function () {
-                this.el.addEventListener('click', () => {
-                    // This opens the link in a new tab
-                    window.open('https://www.instagram.com/pravinga513', '_blank');
-                });
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .print-area { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+            #card-front, #card-back { 
+                box-shadow: none !important; 
+                border: 3px solid #000 !important;
+                margin: 40px auto !important;
+                page-break-inside: avoid;
             }
-        });
+        }
+
+        input[type="range"] { appearance: none; background: #27272a; height: 6px; border-radius: 5px; }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none; width: 18px; height: 18px; background: #eab308;
+            border-radius: 50%; cursor: pointer; border: 3px solid #09090b;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100">
+    <div id="root"></div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Global Firebase Config (Replace with your own keys for deployment)
+        const firebaseConfig = window.__firebase_config ? JSON.parse(window.__firebase_config) : {
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = window.__app_id || 'vingadeck-studio';
+
+        window.VingaFirebase = { auth, db, appId, doc, setDoc, getDoc, signInAnonymously, onAuthStateChanged };
     </script>
 
-    <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
-        
-        <a-marker preset="hiro">
-            <a-entity position="0 0.5 -0.8" rotation="-60 0 0">
-                <a-plane width="2.5" height="1.5" color="#111" opacity="0.9">
-                    <a-text value="PRAVINGA513" align="center" position="0 0.4 0.1" color="#FFD700" width="5"></a-text>
-                    <a-text value="Web & Game Universe" align="center" position="0 0.1 0.1" width="3"></a-text>
-                    
-                    <a-plane 
-                        class="clickable" 
-                        clickhandler 
-                        position="0 -0.4 0.1" 
-                        width="1.2" height="0.3" 
-                        color="#E1306C">
-                        <a-text value="FOLLOW ON INSTA" align="center" color="white" width="3"></a-text>
-                    </a-plane>
-                </a-plane>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-                <a-torus-knot radius="0.1" radius-tubular="0.01" position="1 0.6 0.2" color="gold"
-                    animation="property: rotation; to: 0 360 0; loop: true; dur: 5000">
-                </a-torus-knot>
-            </a-entity>
-        </a-marker>
+        // Custom Icon Component (SVG based for reliability in single file)
+        const Icon = ({ name, size = 16, className = "" }) => {
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
 
-        <a-entity camera>
-            <a-entity 
-                cursor="rayOrigin: mouse" 
-                raycaster="objects: .clickable">
-            </a-entity>
-        </a-camera>
-    </a-scene>
+        const App = () => {
+            const [view, setView] = useState('create'); 
+            const [tab, setTab] = useState('ar'); 
+            const [loading, setLoading] = useState(false);
+            const [saveStatus, setSaveStatus] = useState('');
+            const [cardId, setCardId] = useState(Math.random().toString(36).substring(2, 9).toUpperCase());
+            
+            const [data, setData] = useState({
+                cardHolder: "PRAVINGA 513",
+                brandTitle: "PG513 UNIVERSE",
+                cardColor: "#ffffff",
+                textColor: "#000000",
+                profilePic: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pravinga",
+                arTitle: "PRAVINGA 513",
+                arSubtitle: "Interactive Universe",
+                themeColor: "#FFD700",
+                panelOpacity: 0.9,
+                tiltAngle: -60,
+                links: [
+                    { label: "INSTAGRAM", url: "https://instagram.com/pravinga513", color: "#E1306C" },
+                    { label: "YOUTUBE", url: "https://youtube.com/@games513", color: "#FF0000" }
+                ]
+            });
+
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            }, [tab, view]);
+
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const id = params.get('id');
+                const mode = params.get('view');
+                if (id) {
+                    setCardId(id);
+                    if (window.VingaFirebase) loadCardData(id);
+                    if (mode === 'ar') setView('live-ar');
+                }
+            }, []);
+
+            const loadCardData = async (id) => {
+                const { db, appId, doc, getDoc } = window.VingaFirebase;
+                setLoading(true);
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) setData(docSnap.data());
+                } catch (e) { console.error(e); }
+                setLoading(false);
+            };
+
+            const saveCard = async () => {
+                const { auth, db, appId, doc, setDoc, signInAnonymously } = window.VingaFirebase;
+                setLoading(true);
+                setSaveStatus('Saving...');
+                try {
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', cardId);
+                    await setDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
+                    setSaveStatus('Experience Saved!');
+                    setTimeout(() => setSaveStatus(''), 3000);
+                } catch (e) { setSaveStatus('Save Error'); }
+                setLoading(false);
+            };
+
+            const updateField = (field, value) => setData(prev => ({ ...prev, [field]: value }));
+            
+            const updateLink = (index, field, value) => {
+                const newLinks = [...data.links];
+                newLinks[index][field] = value;
+                setData({ ...data, links: newLinks });
+            };
+
+            const cardPublicUrl = `${window.location.origin}${window.location.pathname}?view=ar&id=${cardId}`;
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(cardPublicUrl)}&size=300x300&bgcolor=ffffff`;
+
+            if (view === 'live-ar') {
+                return (
+                    <div className="w-full h-screen bg-black flex flex-col">
+                        <div className="absolute top-4 left-4 z-50">
+                            <button onClick={() => setView('create')} className="bg-zinc-900/80 backdrop-blur-md text-white px-5 py-2.5 rounded-xl text-sm font-bold border border-white/10">
+                                ← Exit AR View
+                            </button>
+                        </div>
+                        <iframe 
+                            srcDoc={`
+                                <!DOCTYPE html>
+                                <html>
+                                    <head>
+                                        <script src="https://aframe.io/releases/1.3.0/aframe.min.js"><\/script>
+                                        <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><\/script>
+                                    </head>
+                                    <body style="margin: 0; overflow: hidden;">
+                                        <script>
+                                            AFRAME.registerComponent('link-to', {
+                                                schema: { url: {type: 'string'} },
+                                                init: function () {
+                                                    this.el.addEventListener('click', () => { window.open(this.data.url, '_blank'); });
+                                                }
+                                            });
+                                        <\/script>
+                                        <a-scene embedded arjs="debugUIEnabled: false;">
+                                            <a-marker preset="hiro">
+                                                <a-entity position="0 0.5 -0.8" rotation="${data.tiltAngle} 0 0">
+                                                    <a-plane width="3.2" height="2.2" color="#050505" opacity="${data.panelOpacity}" transparent="true">
+                                                        <a-image src="${data.profilePic}" position="0 0.8 0.1" width="0.5" height="0.5"></a-image>
+                                                        <a-text value="${data.arTitle}" align="center" position="0 0.4 0.1" color="${data.themeColor}" width="5"></a-text>
+                                                        <a-text value="${data.arSubtitle}" align="center" position="0 0.1 0.1" color="white" width="3"></a-text>
+                                                        <a-entity position="0 -0.4 0.1">
+                                                            ${data.links.map((link, i) => `
+                                                                <a-plane class="clickable" link-to="url: ${link.url}" position="${(i % 2 === 0 ? -0.8 : 0.8)} ${-Math.floor(i / 2) * 0.45} 0" width="1.4" height="0.35" color="${link.color}">
+                                                                    <a-text value="${link.label}" align="center" color="white" width="2.5"></a-text>
+                                                                </a-plane>
+                                                            `).join('')}
+                                                        </a-entity>
+                                                    </a-plane>
+                                                </a-entity>
+                                            </a-marker>
+                                            <a-entity camera><a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity></a-entity>
+                                        </a-scene>
+                                    </body>
+                                </html>
+                            `}
+                            className="flex-1 border-none"
+                            allow="camera"
+                        />
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <header className="border-b border-zinc-800 p-4 bg-zinc-900 sticky top-0 z-40 flex justify-between items-center no-print">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-yellow-500 p-1.5 rounded-lg shadow-lg">
+                                <Icon name="layers" size={20} className="text-black" />
+                            </div>
+                            <h1 className="font-black text-lg">VINGADECK <span className="text-yellow-500">STUDIO</span></h1>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] text-yellow-500 font-bold uppercase">{saveStatus}</span>
+                            <button onClick={saveCard} className="bg-zinc-800 border border-zinc-700 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                                <Icon name="save" size={16} /> Save
+                            </button>
+                            <button onClick={() => window.print()} className="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-black flex items-center gap-2">
+                                <Icon name="printer" size={16} /> Print
+                            </button>
+                        </div>
+                    </header>
+
+                    <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                        <aside className="w-full md:w-96 border-r border-zinc-800 bg-zinc-900/50 flex flex-col overflow-y-auto no-print">
+                            <div className="flex border-b border-zinc-800">
+                                <button onClick={() => setTab('physical')} className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'physical' ? 'text-yellow-500 border-b-2 border-yellow-500 bg-zinc-800/50' : 'text-zinc-500'}`}>Design</button>
+                                <button onClick={() => setTab('ar')} className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'ar' ? 'text-yellow-500 border-b-2 border-yellow-500 bg-zinc-800/50' : 'text-zinc-500'}`}>3D AR</button>
+                            </div>
+
+                            <div className="p-6 space-y-6">
+                                {tab === 'physical' ? (
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black uppercase text-zinc-500">Physical Card</h3>
+                                        <input value={data.cardHolder} onChange={e => updateField('cardHolder', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="Name" />
+                                        <input value={data.brandTitle} onChange={e => updateField('brandTitle', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="Brand" />
+                                        <input value={data.profilePic} onChange={e => updateField('profilePic', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="Profile Image URL" />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <input type="color" value={data.cardColor} onChange={e => updateField('cardColor', e.target.value)} className="w-full h-10 rounded-lg bg-zinc-800 border border-zinc-700 cursor-pointer" />
+                                            <input type="color" value={data.textColor} onChange={e => updateField('textColor', e.target.value)} className="w-full h-10 rounded-lg bg-zinc-800 border border-zinc-700 cursor-pointer" />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black uppercase text-zinc-500">AR Hologram</h3>
+                                        <input value={data.arTitle} onChange={e => updateField('arTitle', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="3D Title" />
+                                        <input value={data.arSubtitle} onChange={e => updateField('arSubtitle', e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm outline-none" placeholder="3D Subtitle" />
+                                        <div className="flex justify-between items-center text-[10px] text-zinc-500 uppercase font-black">
+                                            <span>Tilt Angle</span>
+                                            <span className="text-yellow-500">{data.tiltAngle}°</span>
+                                        </div>
+                                        <input type="range" min="-90" max="0" step="5" value={data.tiltAngle} onChange={e => updateField('tiltAngle', parseInt(e.target.value))} className="w-full" />
+                                    </div>
+                                )}
+                            </div>
+                        </aside>
+
+                        <section className="flex-1 bg-zinc-950 flex flex-col items-center justify-center p-6 relative overflow-y-auto">
+                            <div className="no-print absolute top-8 text-center">
+                                <h2 className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em] mb-1">Canvas Engine</h2>
+                                <p className="text-zinc-400 text-xs font-medium">Previewing {tab === 'physical' ? 'Printable Layout' : '3D Overlay'}</p>
+                            </div>
+
+                            <div className="relative group perspective-1000 mt-12 print-area">
+                                {tab === 'physical' ? (
+                                    <div className="flex flex-col gap-8 items-center">
+                                        <div id="card-front" className="w-[340px] h-[200px] rounded-2xl shadow-2xl relative overflow-hidden flex flex-col p-8 transition-all duration-500" style={{ backgroundColor: data.cardColor, color: data.textColor }}>
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <img src={data.profilePic} className="w-12 h-12 rounded-xl border border-current/10 bg-white/10 shadow-lg object-cover" />
+                                                <div className="space-y-0.5">
+                                                    <h2 className="text-2xl font-black italic tracking-tighter uppercase">{data.cardHolder}</h2>
+                                                    <p className="text-[8px] opacity-70 uppercase tracking-[0.2em] font-bold">{data.brandTitle}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1"></div>
+                                            <div className="flex justify-between items-end pt-4 border-t border-current/10">
+                                                <div className="text-[8px] font-mono opacity-40">SYSTEM-ID: {cardId}</div>
+                                                <div className="w-8 h-8 bg-current/5 rounded-lg flex items-center justify-center font-black text-xs">513</div>
+                                            </div>
+                                        </div>
+
+                                        <div id="card-back" className="w-[340px] h-[200px] bg-white rounded-2xl shadow-2xl relative overflow-hidden flex items-center p-6 border-2 border-zinc-200/50">
+                                            <div className="w-[140px] h-[140px] bg-black p-4 rounded-xl flex items-center justify-center shrink-0">
+                                                <div className="w-full h-full bg-white p-3 flex flex-col items-center justify-center relative rounded-lg">
+                                                    <img src={qrCodeUrl} className="w-full h-auto" />
+                                                    <div className="absolute -bottom-1 text-[7px] font-black text-black tracking-tighter uppercase">SCAN AR</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 pl-6 space-y-4">
+                                                <div>
+                                                    <h4 className="text-black text-[9px] font-black uppercase mb-1 tracking-widest opacity-40 italic">Operation</h4>
+                                                    <p className="text-black text-[8px] leading-relaxed font-bold opacity-70">
+                                                        1. Scan QR Code<br/>
+                                                        2. Allow Camera<br/>
+                                                        3. Point at Hiro Marker
+                                                    </p>
+                                                </div>
+                                                <div className="pt-4 border-t border-zinc-100">
+                                                    <div className="text-black text-[14px] font-black italic tracking-tighter">VingaDeck Studio</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative w-[340px] h-[480px] flex items-center justify-center select-none perspective-1000">
+                                        <div className="absolute bottom-20 w-44 h-44 bg-black/40 p-4 rounded-2xl rotate-x-60 backdrop-blur-md border border-white/10 shadow-2xl flex items-center justify-center font-black text-white/10">HIRO</div>
+                                        <div className="w-80 h-56 rounded-3xl shadow-[0_0_80px_rgba(255,255,255,0.05)] flex flex-col p-6 border transition-all duration-700 ease-out" style={{ backgroundColor: '#030303', borderColor: data.themeColor, transform: `rotateX(${data.tiltAngle}deg) translateY(-100px) scale(1.1)`, opacity: data.panelOpacity }}>
+                                            <h3 className="text-2xl font-black italic text-center mb-1 tracking-tighter uppercase" style={{ color: data.themeColor }}>{data.arTitle}</h3>
+                                            <p className="text-[9px] text-center text-zinc-400 mb-6 uppercase tracking-[0.3em] font-bold">{data.arSubtitle}</p>
+                                            <div className="grid grid-cols-2 gap-3 mt-auto">
+                                                <div className="h-8 rounded-xl flex items-center justify-center text-[7px] font-black tracking-widest uppercase truncate px-2 text-white bg-pink-600">Instagram</div>
+                                                <div className="h-8 rounded-xl flex items-center justify-center text-[7px] font-black tracking-widest uppercase truncate px-2 text-white bg-red-600">YouTube</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="no-print absolute bottom-12 flex flex-col sm:flex-row gap-4 w-full px-8 justify-center items-center">
+                                <button onClick={() => setView('live-ar')} className="bg-zinc-800 text-white text-xs px-8 py-3.5 rounded-full flex items-center gap-2 border border-zinc-700 transition-all font-bold shadow-2xl active:scale-95">
+                                    <Icon name="smartphone" size={16} /> Launch AR Camera
+                                </button>
+                                <a href={cardPublicUrl} target="_blank" className="bg-yellow-600/10 text-yellow-500 text-xs px-8 py-3.5 rounded-full flex items-center gap-2 border border-yellow-500/30 transition-all font-bold">
+                                    <Icon name="external-link" size={16} /> Public Link
+                                </a>
+                            </div>
+                        </section>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
