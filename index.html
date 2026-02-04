@@ -1,22 +1,66 @@
 <!DOCTYPE html>
 <html>
-  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  
-  <body style="margin : 0px; overflow: hidden;">
-    <a-scene embedded arjs>
+  <head>
+    <title>Pravinga513 AR Card</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  </head>
+
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene 
+      embedded 
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+      renderer="logarithmicDepthBuffer: true;"
+      vr-mode-ui="enabled: false">
+
       <a-marker preset="hiro">
         
-        <a-text value="Pravinga513" position="0 1 0" align="center" rotation="-90 0 0" color="#FFD700" width="6"></a-text>
-        
-        <a-sphere position="0 0.5 0" radius="0.2" color="#EF2D5E" animation="property: position; to: 0 0.7 0; dir: alternate; dur: 1000; loop: true"></a-sphere>
+        <a-plane 
+          position="0 0.01 0" 
+          rotation="-90 0 0" 
+          width="1.6" height="0.9" 
+          material="color: #1a1a1a; opacity: 0.8; transparent: true; metalness: 0.5; roughness: 0.1">
+          
+          <a-text 
+            value="PRAVINGA513" 
+            position="0 0.1 0" 
+            align="center" 
+            color="#FFD700" 
+            width="5" 
+            font="exo2bold">
+          </a-text>
 
-        <a-text value="YouTube: Games513" position="-1.5 0.2 0" rotation="-90 0 0" color="white" width="3"></a-text>
-        
-        <a-text value="HTML/JS/Python" position="1.5 0.2 0" rotation="-90 0 0" color="white" width="3"></a-text>
+          <a-text 
+            value="Web & Game Developer" 
+            position="0 -0.15 0" 
+            align="center" 
+            color="#FFFFFF" 
+            width="3">
+          </a-text>
+        </a-plane>
+
+        <a-sphere 
+          position="0 0.6 0" 
+          radius="0.15" 
+          color="#4CC3D9" 
+          animation="property: position; to: 0 0.8 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutQuad"
+          animation__rotate="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear">
+        </a-sphere>
+
+        <a-entity position="-1.2 0.2 0" rotation="-90 0 0">
+            <a-plane width="0.8" height="0.3" color="#000" opacity="0.6">
+                <a-text value="GAMES513" align="center" width="2.5" color="#FFD700"></a-text>
+            </a-plane>
+        </a-entity>
+
+        <a-entity position="1.2 0.2 0" rotation="-90 0 0">
+            <a-plane width="0.8" height="0.3" color="#000" opacity="0.6">
+                <a-text value="GLAIMS" align="center" width="2.5" color="#FFD700"></a-text>
+            </a-plane>
+        </a-entity>
 
       </a-marker>
-      
+
       <a-entity camera></a-entity>
     </a-scene>
   </body>
