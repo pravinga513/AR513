@@ -1,67 +1,67 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Pravinga513 AR Card</title>
+<head>
+    <meta charset="utf-8">
+    <title>Pravinga513 AR Portfolio</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  </head>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    
+    <style>
+        .arjs-loader {
+            height: 100%; width: 100%; position: absolute; top: 0; left: 0;
+            background-color: rgba(0, 0, 0, 0.8); z-index: 9999;
+            display: flex; justify-content: center; align-items: center; color: white;
+        }
+    </style>
+</head>
 
-  <body style="margin: 0; overflow: hidden;">
-    <a-scene 
-      embedded 
-      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
-      renderer="logarithmicDepthBuffer: true;"
-      vr-mode-ui="enabled: false">
+<body style="margin: 0; overflow: hidden;">
+    <div class="arjs-loader"><div>Loading Experience...</div></div>
 
-      <a-marker preset="hiro">
-        
-        <a-plane 
-          position="0 0.01 0" 
-          rotation="-90 0 0" 
-          width="1.6" height="0.9" 
-          material="color: #1a1a1a; opacity: 0.8; transparent: true; metalness: 0.5; roughness: 0.1">
-          
-          <a-text 
-            value="PRAVINGA513" 
-            position="0 0.1 0" 
-            align="center" 
-            color="#FFD700" 
-            width="5" 
-            font="exo2bold">
-          </a-text>
+    <a-scene
+        vr-mode-ui="enabled: false;"
+        renderer="logarithmicDepthBuffer: true;"
+        embedded
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
 
-          <a-text 
-            value="Web & Game Developer" 
-            position="0 -0.15 0" 
-            align="center" 
-            color="#FFFFFF" 
-            width="3">
-          </a-text>
-        </a-plane>
+        <a-nft
+            type="nft"
+            url="markers/card"
+            smooth="true"
+            smoothCount="10"
+            smoothTolerance=".01"
+            smoothThreshold="5">
 
-        <a-sphere 
-          position="0 0.6 0" 
-          radius="0.15" 
-          color="#4CC3D9" 
-          animation="property: position; to: 0 0.8 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutQuad"
-          animation__rotate="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear">
-        </a-sphere>
+            <a-entity position="0 0 -150" rotation="-50 0 0" scale="100 100 100">
+                
+                <a-plane width="2.5" height="1.6" material="color: #000; opacity: 0.85; transparent: true; metalness: 0.6; roughness: 0.2">
+                    
+                    <a-text value="PRAVINGA513" position="0 0.5 0.1" align="center" color="#FFD700" width="5"></a-text>
+                    
+                    <a-text value="Game & Web Developer" position="0 0.2 0.1" align="center" width="3"></a-text>
+                    
+                    <a-entity position="-0.7 -0.3 0.1">
+                        <a-plane width="0.8" height="0.4" color="#222">
+                            <a-text value="GLAIMS" align="center" width="3" color="#FFD700"></a-text>
+                        </a-plane>
+                    </a-entity>
 
-        <a-entity position="-1.2 0.2 0" rotation="-90 0 0">
-            <a-plane width="0.8" height="0.3" color="#000" opacity="0.6">
-                <a-text value="GAMES513" align="center" width="2.5" color="#FFD700"></a-text>
-            </a-plane>
-        </a-entity>
+                    <a-entity position="0.7 -0.3 0.1">
+                        <a-plane width="0.8" height="0.4" color="#222">
+                            <a-text value="GAMES513" align="center" width="3" color="#FFD700"></a-text>
+                        </a-plane>
+                    </a-entity>
 
-        <a-entity position="1.2 0.2 0" rotation="-90 0 0">
-            <a-plane width="0.8" height="0.3" color="#000" opacity="0.6">
-                <a-text value="GLAIMS" align="center" width="2.5" color="#FFD700"></a-text>
-            </a-plane>
-        </a-entity>
+                </a-plane>
 
-      </a-marker>
+                <a-torus-knot radius="0.15" radius-tubular="0.02" position="1 0.6 0.2" color="#4CC3D9"
+                    animation="property: rotation; to: 0 360 360; loop: true; dur: 5000">
+                </a-torus-knot>
+            </a-entity>
 
-      <a-entity camera></a-entity>
+        </a-nft>
+
+        <a-entity camera></a-entity>
     </a-scene>
-  </body>
+</body>
 </html>
