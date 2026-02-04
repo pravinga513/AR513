@@ -24,35 +24,31 @@
         .outfit { font-family: 'Outfit', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
+        /* Mobile Vertical Scrolling Fix */
+        @media (max-width: 768px) {
+            #view-studio, #view-dashboard { height: auto !important; overflow: visible !important; }
+            main { flex-direction: column !important; overflow: visible !important; }
+            aside { height: auto !important; overflow: visible !important; border-bottom: 1px solid #27272a; }
+            #preview-workspace { margin-top: 40px; margin-bottom: 120px; }
+        }
+
         .perspective-1000 { perspective: 1000px; }
         .rotate-x-60 { transform: rotateX(60deg); }
         .animate-spin-slow { animation: spin 15s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* --- BUSINESS CARD PRINTING (3.5x2 inch) --- */
+        /* Business Card Printing (3.5x2 inch) */
         @media print {
             @page { size: 3.5in 2in; margin: 0; }
             body { background: white !important; color: black !important; }
             .no-print { display: none !important; }
-            #root, main, section { display: block !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-            #preview-workspace { display: block !important; width: 3.5in !important; height: auto !important; margin: 0 !important; transform: none !important; }
+            #preview-workspace { transform: none !important; }
             #card-front, #card-back { 
-                width: 3.5in !important; 
-                height: 2in !important; 
-                margin: 0 !important; 
-                padding: 0.3in !important;
-                border: 1px solid #eee !important;
-                box-shadow: none !important;
-                page-break-after: always;
-                border-radius: 0 !important;
-                position: relative !important;
-                top: 0 !important; left: 0 !important;
-                -webkit-print-color-adjust: exact;
+                width: 3.5in !important; height: 2in !important; 
+                margin: 0 !important; padding: 0.3in !important;
+                page-break-after: always; border: 1px solid #eee !important;
+                border-radius: 0 !important; -webkit-print-color-adjust: exact;
             }
-            img { max-width: 100%; display: block; }
         }
 
         .glass { background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
@@ -62,13 +58,12 @@
         input[type="range"] { appearance: none; background: #27272a; height: 4px; border-radius: 5px; width: 100%; }
         input[type="range"]::-webkit-slider-thumb {
             appearance: none; width: 14px; height: 14px; background: var(--brand-yellow);
-            border-radius: 50%; cursor: pointer; border: 3px solid #09090b;
+            border-radius: 50%; cursor: pointer; border: 2px solid #09090b;
         }
 
         .tab-active { color: var(--brand-yellow); border-bottom: 3px solid var(--brand-yellow); background: rgba(255,255,255,0.03); }
         .hidden-view { display: none !important; }
-
-        .owner-badge { background: linear-gradient(90deg, #eab308, #fbbf24); color: black; font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+        .owner-badge { background: #eab308; color: black; font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
         .visitor-badge { background: #3f3f46; color: #a1a1aa; font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
     </style>
 </head>
@@ -77,7 +72,7 @@
     <!-- Notification Toast -->
     <div id="toast" class="fixed top-5 right-5 z-[300] transform translate-x-full transition-transform duration-300">
         <div class="glass px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl">
-            <div id="toast-icon" class="text-yellow-500"></div>
+            <div id="toast-icon"></div>
             <span id="toast-msg" class="text-sm font-bold"></span>
         </div>
     </div>
@@ -109,13 +104,13 @@
         </div>
     </nav>
 
-    <!-- VIEWS -->
+    <!-- LANDING VIEW -->
     <div id="view-landing" class="min-h-screen no-print p-6 text-center">
         <div class="max-w-7xl mx-auto pt-24 pb-12">
             <h2 class="text-5xl md:text-8xl font-black heading-font tracking-tighter mb-8 text-white leading-[0.9]">
                 Professional <br><span class="text-yellow-500 underline decoration-white/10">AR Identity.</span>
             </h2>
-            <p class="max-w-xl mx-auto text-zinc-500 mb-12 text-lg">Create, design, and manage your holographic business cards with enterprise precision.</p>
+            <p class="max-w-xl mx-auto text-zinc-500 mb-12 text-lg">Holographic business cards that stay present even when the camera moves.</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <button onclick="startFreeCard()" class="btn-primary px-12 py-5 rounded-2xl text-xs uppercase tracking-[0.2em] shadow-2xl">Initialize Workspace</button>
                 <button onclick="navigateTo('showcase')" class="bg-zinc-900 border border-zinc-800 px-12 py-5 rounded-2xl text-xs font-black uppercase tracking-widest">Showcase</button>
@@ -123,32 +118,7 @@
         </div>
     </div>
 
-    <div id="view-showcase" class="hidden-view no-print p-6">
-        <div class="max-w-6xl mx-auto py-20 text-center">
-             <h2 class="text-4xl font-black mb-10 uppercase tracking-tighter">Community <span class="text-yellow-500">Artifacts</span></h2>
-             <div class="grid md:grid-cols-3 gap-6">
-                 <div class="glass p-8 rounded-3xl text-left"><div class="h-32 bg-zinc-900 rounded-xl mb-4"></div><p class="font-bold">Creative Hub #1</p></div>
-                 <div class="glass p-8 rounded-3xl text-left"><div class="h-32 bg-zinc-900 rounded-xl mb-4"></div><p class="font-bold">Tech Deck #4</p></div>
-                 <div class="glass p-8 rounded-3xl text-left"><div class="h-32 bg-zinc-900 rounded-xl mb-4"></div><p class="font-bold">Founder Card #9</p></div>
-             </div>
-        </div>
-    </div>
-
-    <div id="view-auth" class="hidden-view no-print flex items-center justify-center min-h-[80vh] p-6">
-        <div class="glass w-full max-w-sm p-10 rounded-[40px] shadow-2xl border-white/5">
-            <h2 id="auth-title" class="text-3xl font-black heading-font tracking-tighter mb-8 text-white">Login</h2>
-            <form onsubmit="handleAuth(event)" class="space-y-4">
-                <input type="email" id="auth-email" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm outline-none focus:border-yellow-500" placeholder="Email">
-                <input type="password" id="auth-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm outline-none focus:border-yellow-500" placeholder="Password (Min 6 chars)">
-                <button type="submit" id="auth-submit" class="btn-primary w-full py-4 rounded-xl flex justify-center items-center gap-3">
-                    <span id="auth-btn-text">Verify Identity</span>
-                    <div id="auth-loader" class="hidden w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                </button>
-            </form>
-            <button onclick="toggleAuthMode()" id="auth-toggle" class="w-full mt-6 text-[10px] uppercase font-black tracking-widest text-zinc-500 hover:text-yellow-500">Switch to Signup</button>
-        </div>
-    </div>
-
+    <!-- DASHBOARD VIEW -->
     <div id="view-dashboard" class="hidden-view no-print p-6 md:p-16">
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-12">
@@ -160,121 +130,94 @@
         </div>
     </div>
 
-    <div id="view-studio" class="hidden-view no-print flex flex-col h-screen overflow-hidden">
-        <main class="flex-1 flex flex-col md:flex-row">
+    <!-- STUDIO VIEW -->
+    <div id="view-studio" class="hidden-view min-h-screen flex flex-col no-print bg-[#080808]">
+        <main class="flex-1 flex flex-col md:flex-row h-full">
             <!-- Sidebar Editor -->
-            <aside id="studio-sidebar" class="w-full md:w-[380px] border-r border-zinc-800 bg-zinc-900/50 flex flex-col overflow-y-auto scrollbar-hide">
+            <aside id="studio-sidebar" class="w-full md:w-[380px] border-r border-zinc-800 bg-zinc-900/50 flex flex-col scrollbar-hide md:h-full md:overflow-y-auto">
                 <div class="flex border-b border-zinc-800 sticky top-0 bg-zinc-900 z-30">
-                    <button onclick="switchTab('physical')" id="tab-physical" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest tab-active transition-all">Designer</button>
-                    <button onclick="switchTab('ar')" id="tab-ar" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 transition-all">Matrix</button>
+                    <button onclick="switchTab('physical')" id="tab-physical" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest tab-active">Designer</button>
+                    <button onclick="switchTab('ar')" id="tab-ar" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Matrix</button>
                 </div>
 
                 <div class="p-6 space-y-8 pb-32">
                     <div id="section-physical" class="space-y-6">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Layout Parameters</h3>
+                            <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Identity Build</h3>
                             <div id="user-role-badge"></div>
                         </div>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] uppercase font-black text-zinc-600 mb-2 block">Card Holder</label>
-                                <input type="text" id="input-cardHolder" oninput="updateData('cardHolder', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm outline-none">
-                            </div>
-                            <div>
-                                <label class="text-[9px] uppercase font-black text-zinc-600 mb-2 block">Brand Typography</label>
-                                <select id="input-font" onchange="updateData('font', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm outline-none">
-                                    <option value="Exo 2">Exo 2 (Tech)</option>
-                                    <option value="Inter">Inter (Clean)</option>
-                                    <option value="Outfit">Outfit (Round)</option>
-                                    <option value="JetBrains Mono">JetBrains (Code)</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-[9px] uppercase font-black text-zinc-600 mb-2 block">Base Color</label>
-                                    <input type="color" id="input-cardColor" oninput="updateData('cardColor', this.value)" class="w-full h-10 rounded-xl bg-zinc-950 border border-zinc-800 p-1 cursor-pointer">
-                                </div>
-                                <div>
-                                    <label class="text-[9px] uppercase font-black text-zinc-600 mb-2 block">Ink Color</label>
-                                    <input type="color" id="input-textColor" oninput="updateData('textColor', this.value)" class="w-full h-10 rounded-xl bg-zinc-950 border border-zinc-800 p-1 cursor-pointer">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="text-[9px] uppercase font-black text-zinc-600 mb-2 block">Avatar/Logo URL</label>
-                                <input type="text" id="input-profilePic" oninput="updateData('profilePic', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs mono">
-                            </div>
+                        <input type="text" id="input-cardHolder" oninput="updateData('cardHolder', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm outline-none" placeholder="Name">
+                        <input type="text" id="input-brandTitle" oninput="updateData('brandTitle', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm outline-none" placeholder="Brand">
+                        <select id="input-font" onchange="updateData('font', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm outline-none">
+                            <option value="Exo 2">Exo 2</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Outfit">Outfit</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="color" id="input-cardColor" oninput="updateData('cardColor', this.value)" class="w-full h-10 rounded-xl cursor-pointer">
+                            <input type="color" id="input-textColor" oninput="updateData('textColor', this.value)" class="w-full h-10 rounded-xl cursor-pointer">
                         </div>
                     </div>
 
                     <div id="section-ar" class="hidden space-y-6">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Interactive Nodes</h3>
-                            <button onclick="addLink()" class="text-yellow-500 p-2"><i data-lucide="plus-circle" class="w-5 h-5"></i></button>
+                            <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Nodes</h3>
+                            <button onclick="addLink()" class="text-yellow-500 p-2"><i data-lucide="plus-circle"></i></button>
                         </div>
                         <div id="links-container" class="space-y-4"></div>
-                        
                         <div class="pt-6 border-t border-zinc-800 space-y-4">
-                            <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">HUD Environment</h3>
-                            <input type="text" id="input-arTitle" oninput="updateData('arTitle', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm outline-none" placeholder="HUD Title">
+                            <input type="text" id="input-arTitle" oninput="updateData('arTitle', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm" placeholder="HUD Title">
                             <div>
-                                <div class="flex justify-between text-[9px] uppercase font-black mb-2 text-zinc-600">
-                                    <span>Hologram Tilt</span>
-                                    <span id="tilt-value" class="text-yellow-500">-60°</span>
-                                </div>
+                                <label class="text-[9px] uppercase font-black text-zinc-600 mb-2 block">Tilt Projection</label>
                                 <input type="range" id="input-tiltAngle" min="-90" max="0" step="5" oninput="updateData('tiltAngle', this.value)">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-auto p-6 bg-zinc-950/80 border-t border-zinc-800 flex justify-between items-center sticky bottom-0 z-30">
-                    <div class="flex items-center gap-2">
-                        <div id="db-status-dot" class="w-2 h-2 rounded-full bg-zinc-600"></div>
-                        <span id="db-status-text" class="text-[9px] font-black uppercase text-zinc-600">Checking Auth...</span>
-                    </div>
-                    <button onclick="saveExperience()" id="save-btn" class="bg-yellow-500 text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed">Sync Matrix</button>
+                <div class="mt-auto p-6 bg-zinc-950 border-t border-zinc-800 flex justify-between items-center sticky bottom-0 z-40">
+                    <div id="db-status-text" class="text-[9px] font-black uppercase text-zinc-600">Ready</div>
+                    <button onclick="saveExperience()" id="save-btn" class="bg-yellow-500 text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Sync Vault</button>
                 </div>
             </aside>
 
             <!-- Preview Space -->
-            <section class="flex-1 bg-[#050505] flex flex-col items-center justify-center p-4 relative overflow-y-auto">
-                <div id="preview-workspace" class="relative transition-all duration-700 flex flex-col items-center scale-[0.6] sm:scale-75 md:scale-90 lg:scale-100"></div>
-                <div id="studio-toolbar" class="absolute bottom-8 flex flex-wrap gap-3 justify-center px-4 w-full">
-                    <button onclick="launchAR()" class="btn-primary px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center gap-2">
-                        <i data-lucide="eye" class="w-4 h-4"></i> Launch AR Matrix
-                    </button>
-                    <button onclick="copyPublicLink()" class="glass text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/5 transition-all">
-                        <i data-lucide="share" class="w-4 h-4 text-yellow-500"></i> Copy Share Link
-                    </button>
-                    <button onclick="window.print()" class="bg-zinc-800 text-zinc-400 border border-zinc-700 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:text-white transition-all">
-                        <i data-lucide="printer" class="w-4 h-4"></i> Export PDF
-                    </button>
+            <section class="flex-1 bg-[#050505] flex flex-col items-center justify-center p-4 relative min-h-[500px]">
+                <div id="preview-workspace" class="relative flex flex-col items-center scale-[0.65] sm:scale-75 md:scale-90 lg:scale-100"></div>
+                <div id="studio-toolbar" class="absolute bottom-8 flex gap-3 justify-center w-full px-4 no-print">
+                    <button onclick="launchAR()" class="btn-primary px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl">Launch Matrix</button>
+                    <button onclick="window.print()" class="bg-zinc-800 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase">Export PDF</button>
                 </div>
             </section>
         </main>
     </div>
 
     <!-- AR VIEWPORT -->
-    <div id="view-ar-mode" class="fixed inset-0 z-[500] bg-black hidden flex flex-col">
-        <!-- Floating HUD Overlay -->
+    <div id="view-ar-mode" class="fixed inset-0 z-[500] bg-black hidden">
         <div class="absolute top-8 left-8 z-[510] flex items-center gap-4">
-            <button onclick="closeAR()" class="bg-zinc-900/90 backdrop-blur-xl text-white px-6 py-4 rounded-[28px] text-[10px] font-black border border-white/10 flex items-center gap-4 uppercase tracking-[0.2em]">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i> Exit
-            </button>
+            <button onclick="closeAR()" class="bg-zinc-900/90 backdrop-blur-xl text-white px-6 py-4 rounded-[28px] text-[10px] font-black border border-white/10">EXIT</button>
             <div id="tracking-status" class="bg-zinc-900/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
                 <div id="tracking-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
-                <span id="tracking-text" class="text-[9px] font-black uppercase text-zinc-400">Marker Missing</span>
+                <span id="tracking-text" class="text-[9px] font-black uppercase text-zinc-400 tracking-tighter">Scanning...</span>
             </div>
         </div>
-        
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-[510]">
-             <button id="re-anchor-btn" onclick="requestReAnchor()" class="hidden glass text-yellow-500 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl border-yellow-500/20 active:scale-95">
-                 Re-Anchor To Marker
-             </button>
-        </div>
+        <div id="ar-iframe-container" class="w-full h-full"></div>
+    </div>
 
-        <div id="ar-iframe-container" class="flex-1"></div>
+    <!-- AUTH VIEW -->
+    <div id="view-auth" class="hidden-view no-print flex items-center justify-center min-h-[80vh] p-6">
+        <div class="glass w-full max-w-sm p-10 rounded-[40px]">
+            <h2 id="auth-title" class="text-3xl font-black heading-font tracking-tighter mb-8 text-white">Login</h2>
+            <form onsubmit="handleAuth(event)" class="space-y-4">
+                <input type="email" id="auth-email" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white" placeholder="Email">
+                <input type="password" id="auth-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white" placeholder="Password">
+                <button type="submit" id="auth-submit" class="btn-primary w-full py-4 rounded-xl flex justify-center items-center gap-3">
+                    <span id="auth-btn-text">Authorize</span>
+                    <div id="auth-loader" class="hidden w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                </button>
+            </form>
+            <button onclick="toggleAuthMode()" id="auth-toggle" class="w-full mt-6 text-[10px] uppercase font-black text-zinc-500">Switch to Signup</button>
+        </div>
     </div>
 
     <script>
@@ -282,26 +225,9 @@
         const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlempqbXNieGlpeGVpZXN6YWl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMDM2MDYsImV4cCI6MjA4NTc3OTYwNn0.Mdaa1siGcWR9MPZXlBn3MTLGAzENJrUWGAb6akK3wyk"; 
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-        let user = null;
-        let ownerId = null;
-        let authMode = 'login';
-        let currentTab = 'physical';
-        let currentCardId = null;
-        let appData = {
-            cardHolder: "ALEX VINGA",
-            brandTitle: "CREATIVE HUB",
-            font: "Exo 2",
-            cardColor: "#ffffff",
-            textColor: "#000000",
-            profilePic: "https://api.dicebear.com/7.x/shapes/svg?seed=Vinga",
-            arTitle: "AR PORTAL",
-            panelOpacity: 0.9,
-            tiltAngle: -60,
-            links: [
-                { label: "PORTFOLIO", url: "https://", color: "#222222", x: -0.85, y: -0.5 },
-                { label: "INSTAGRAM", url: "https://instagram.com", color: "#E1306C", x: 0.85, y: -0.5 }
-            ]
-        };
+        let user = null, ownerId = null, currentCardId = null;
+        let authMode = 'login', currentTab = 'physical';
+        let appData = { cardHolder: "NEW HUB USER", brandTitle: "IDENTITY", font: "Exo 2", cardColor: "#ffffff", textColor: "#000000", profilePic: "https://api.dicebear.com/7.x/shapes/svg?seed=Hub", arTitle: "AR PORTAL", panelOpacity: 0.9, tiltAngle: -60, links: [{ label: "WEBSITE", url: "https://", color: "#222222", x: 0, y: -0.5 }] };
 
         window.onload = async () => {
             lucide.createIcons();
@@ -311,166 +237,70 @@
             checkUrlParams();
         };
 
-        function updateNav() {
-            document.getElementById('nav-guest').classList.toggle('hidden', !!user);
-            document.getElementById('nav-user').classList.toggle('hidden', !user);
-        }
-
-        async function navigateTo(viewName) {
+        function navigateTo(viewName) {
             ['landing', 'auth', 'dashboard', 'studio', 'showcase'].forEach(v => {
                 const el = document.getElementById('view-' + v);
                 if (el) el.classList.add('hidden-view');
             });
-
             if (viewName === 'login' || viewName === 'signup') {
                 document.getElementById('view-auth').classList.remove('hidden-view');
-                authMode = viewName;
-                toggleAuthMode();
+                authMode = viewName; toggleAuthMode();
             } else {
                 const target = document.getElementById('view-' + viewName);
                 if (target) target.classList.remove('hidden-view');
             }
-
             if (viewName === 'dashboard') loadDecks();
             if (viewName === 'studio') renderStudio();
-            
             lucide.createIcons();
-            window.scrollTo(0,0);
         }
 
         function toggleAuthMode() {
             const isLogin = authMode === 'login';
             document.getElementById('auth-title').innerText = isLogin ? 'Verify Identity' : 'Nexus Registry';
-            document.getElementById('auth-toggle').innerText = isLogin ? "No account? Join Registry" : "Existing Member? Login";
-            document.getElementById('auth-btn-text').innerText = isLogin ? 'Authorize' : 'Initialize Identity';
+            document.getElementById('auth-btn-text').innerText = isLogin ? 'Authorize' : 'Join';
         }
 
         async function handleAuth(e) {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            const loader = document.getElementById('auth-loader');
-            const btnText = document.getElementById('auth-btn-text');
-            
-            loader.classList.remove('hidden');
-            btnText.classList.add('hidden');
-
+            const loader = document.getElementById('auth-loader'), btnText = document.getElementById('auth-btn-text');
+            loader.classList.remove('hidden'); btnText.classList.add('hidden');
             try {
-                let res = (authMode === 'login') 
-                    ? await supabaseClient.auth.signInWithPassword({ email, password })
-                    : await supabaseClient.auth.signUp({ email, password });
-
+                let res = (authMode === 'login') ? await supabaseClient.auth.signInWithPassword({ email, password }) : await supabaseClient.auth.signUp({ email, password });
                 if (res.error) throw res.error;
-                
-                if (res.data.user && res.data.session) {
-                    user = res.data.user;
-                    updateNav();
-                    navigateTo('dashboard');
-                    showToast("Verified", "success");
-                } else {
-                    showToast("Registry Entry Created. You can now login.", "success");
-                    navigateTo('login');
-                }
-            } catch (err) {
-                showToast(err.message, "error");
-            } finally {
-                loader.classList.add('hidden');
-                btnText.classList.remove('hidden');
-            }
-        }
-
-        async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            user = null;
-            updateNav();
-            navigateTo('landing');
+                if (res.data.session) { user = res.data.user; updateNav(); navigateTo('dashboard'); }
+                else { showToast("Sign Up successful. You can log in.", "success"); navigateTo('login'); }
+            } catch (err) { showToast(err.message, "error"); }
+            finally { loader.classList.add('hidden'); btnText.classList.remove('hidden'); }
         }
 
         async function loadDecks() {
             if (!user) return;
             const grid = document.getElementById('decks-grid');
-            grid.innerHTML = '<div class="col-span-full py-10 text-center font-black uppercase text-xs tracking-widest text-zinc-700 animate-pulse">Syncing Vault...</div>';
-            
             const { data } = await supabaseClient.from('cards').select('*').order('updated_at', { ascending: false });
-            
             grid.innerHTML = (data || []).map(deck => `
-                <div class="glass p-8 rounded-[40px] border border-white/5 hover:border-yellow-500/50 transition-all duration-500">
-                    <div class="h-24 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center">
-                        <div class="w-12 h-8 rounded shadow-2xl" style="background-color: ${deck.config.cardColor}"></div>
-                    </div>
-                    <h4 class="font-black text-white mb-6 uppercase tracking-tighter truncate">${deck.config.cardHolder}</h4>
+                <div class="glass p-6 rounded-[30px] border border-white/5 hover:border-yellow-500/50 transition-all">
+                    <h4 class="font-black text-white mb-6 uppercase text-xs truncate">${deck.config.cardHolder}</h4>
                     <div class="flex gap-2">
-                        <button onclick="editDeck('${deck.id}')" class="flex-1 bg-zinc-800 text-[10px] font-black uppercase tracking-widest py-3 rounded-xl">Studio</button>
-                        <button onclick="deleteDeck('${deck.id}')" class="p-3 bg-red-500/5 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="editDeck('${deck.id}')" class="flex-1 bg-zinc-800 text-[10px] font-black uppercase py-3 rounded-xl">Edit</button>
+                        <button onclick="deleteDeck('${deck.id}')" class="p-3 text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>`).join('');
             document.getElementById('decks-empty').classList.toggle('hidden', data?.length > 0);
             lucide.createIcons();
         }
 
-        async function editDeck(id) {
-            window.location.search = `?id=${id}`;
-        }
-
-        async function deleteDeck(id) {
-            if (!confirm("Permanent Deletion?")) return;
-            await supabaseClient.from('cards').delete().eq('id', id);
-            loadDecks();
-        }
-
-        function createNewDeck() {
-            currentCardId = Math.random().toString(36).substring(2, 9).toUpperCase();
-            appData = { ...appData }; 
-            navigateTo('studio');
-        }
-
-        function startFreeCard() { user ? navigateTo('dashboard') : navigateTo('signup'); }
-
         function renderStudio() {
             syncInputs();
-            updateStudioStatus();
-            renderUI();
-        }
-
-        function updateStudioStatus() {
             const isOwner = user && user.id === ownerId;
-            const dot = document.getElementById('db-status-dot');
-            const text = document.getElementById('db-status-text');
-            const saveBtn = document.getElementById('save-btn');
-            const badge = document.getElementById('user-role-badge');
-            
-            if (isOwner || !ownerId) {
-                dot.className = "w-2 h-2 rounded-full bg-green-500";
-                text.innerText = ownerId ? "Master Control Mode" : "Initial Draft";
-                saveBtn.disabled = false;
-                badge.innerHTML = '<span class="owner-badge">Creator Access</span>';
-                document.querySelectorAll('#studio-sidebar input, #studio-sidebar select').forEach(el => el.disabled = false);
-            } else {
-                dot.className = "w-2 h-2 rounded-full bg-blue-500";
-                text.innerText = "Visitor Preview Mode";
-                saveBtn.disabled = true;
-                saveBtn.title = "You do not own this card";
-                badge.innerHTML = '<span class="visitor-badge">Read Only</span>';
-                document.querySelectorAll('#studio-sidebar input, #studio-sidebar select').forEach(el => el.disabled = true);
-            }
-        }
-
-        function updateData(key, value) {
-            appData[key] = value;
-            if (key === 'tiltAngle') document.getElementById('tilt-value').innerText = value + "°";
+            document.getElementById('db-status-text').innerText = isOwner ? "Master Mode" : "Preview Mode";
+            document.getElementById('save-btn').disabled = !isOwner && ownerId;
             renderUI();
         }
 
-        function syncInputs() {
-            const fields = ['cardHolder', 'brandTitle', 'font', 'profilePic', 'cardColor', 'textColor', 'arTitle', 'tiltAngle', 'panelOpacity'];
-            fields.forEach(f => {
-                const el = document.getElementById('input-' + f);
-                if(el) el.value = appData[f] || "";
-            });
-            const tv = document.getElementById('tilt-value');
-            if(tv) tv.innerText = appData.tiltAngle + "°";
-        }
-
+        function updateData(key, value) { appData[key] = value; renderUI(); }
+        function syncInputs() { ['cardHolder', 'brandTitle', 'font', 'profilePic', 'cardColor', 'textColor', 'arTitle', 'tiltAngle'].forEach(f => { const el = document.getElementById('input-' + f); if(el) el.value = appData[f] || ""; }); }
         function switchTab(tab) {
             currentTab = tab;
             document.getElementById('tab-physical').className = "flex-1 py-4 text-[10px] font-black uppercase tracking-widest " + (tab === 'physical' ? 'tab-active' : 'text-zinc-500');
@@ -481,219 +311,97 @@
         }
 
         function renderLinksList() {
-            const container = document.getElementById('links-container');
-            container.innerHTML = appData.links.map((link, idx) => `
-                <div class="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-4 shadow-2xl relative">
-                    <button onclick="removeLink(${idx})" class="absolute top-2 right-2 text-zinc-600 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button>
-                    <input type="text" value="${link.label}" oninput="updateLink(${idx}, 'label', this.value.toUpperCase())" class="w-full bg-transparent text-[10px] font-black tracking-widest text-yellow-500 outline-none border-b border-white/5 pb-2">
-                    <input type="text" value="${link.url}" oninput="updateLink(${idx}, 'url', this.value)" class="w-full bg-transparent text-[10px] text-zinc-500 outline-none">
-                    
-                    <div class="space-y-3 pt-2">
-                        <div class="flex justify-between text-[8px] font-black uppercase text-zinc-600"><span>Horizontal Pos</span><span>${link.x}</span></div>
-                        <input type="range" min="-1.5" max="1.5" step="0.05" value="${link.x}" oninput="updateLink(${idx}, 'x', parseFloat(this.value))">
-                        
-                        <div class="flex justify-between text-[8px] font-black uppercase text-zinc-600"><span>Vertical Pos</span><span>${link.y}</span></div>
-                        <input type="range" min="-1.2" max="1.2" step="0.05" value="${link.y}" oninput="updateLink(${idx}, 'y', parseFloat(this.value))">
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <label class="text-[8px] uppercase text-zinc-700 font-black">Node Color</label>
-                        <input type="color" value="${link.color}" oninput="updateLink(${idx}, 'color', this.value)" class="w-full h-1 bg-zinc-800 rounded-full border-none appearance-none cursor-pointer">
-                    </div>
+            document.getElementById('links-container').innerHTML = appData.links.map((link, idx) => `
+                <div class="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-3 relative">
+                    <button onclick="removeLink(${idx})" class="absolute top-2 right-2 text-zinc-600"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    <input type="text" value="${link.label}" oninput="updateLink(${idx}, 'label', this.value.toUpperCase())" class="w-full bg-transparent text-[10px] font-bold text-yellow-500 outline-none">
+                    <input type="range" min="-1.5" max="1.5" step="0.1" value="${link.x}" oninput="updateLink(${idx}, 'x', parseFloat(this.value))">
+                    <input type="range" min="-1.2" max="1.2" step="0.1" value="${link.y}" oninput="updateLink(${idx}, 'y', parseFloat(this.value))">
                 </div>`).join('');
             lucide.createIcons();
         }
-
-        function updateLink(idx, field, val) { appData.links[idx][field] = val; renderUI(); }
+        function updateLink(idx, f, v) { appData.links[idx][f] = v; renderUI(); }
         function addLink() { appData.links.push({ label: "NEW NODE", url: "https://", color: "#333333", x: 0, y: -0.5 }); renderUI(); }
         function removeLink(idx) { appData.links.splice(idx, 1); renderUI(); }
 
         async function saveExperience() {
             if (!user) { navigateTo('login'); return; }
-            const btn = document.getElementById('save-btn');
-            btn.innerText = "Syncing...";
             try {
                 await supabaseClient.from('cards').upsert({ id: currentCardId, user_id: user.id, config: appData, updated_at: new Date().toISOString() });
-                ownerId = user.id;
-                showToast("Experience Synced", "success");
-                updateStudioStatus();
+                showToast("Nexus Synced", "success");
             } catch (e) { showToast("Sync Fault", "error"); }
-            btn.innerText = "Sync Matrix";
         }
 
         function renderUI() {
             const workspace = document.getElementById('preview-workspace');
             const cardUrl = window.location.href.split('?')[0] + "?id=" + currentCardId;
             const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(cardUrl + "&view=ar") + "&size=300x300&bgcolor=ffffff";
-
             if (currentTab === 'physical') {
                 workspace.innerHTML = `
-                    <div class="flex flex-col gap-10 items-center">
-                        <div id="card-front" class="w-[360px] h-[210px] rounded-[30px] flex flex-col p-10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden" style="background-color: ${appData.cardColor}; color: ${appData.textColor}; font-family: ${appData.font}">
-                            <div class="flex items-center gap-6 relative z-10">
-                                <img src="${appData.profilePic}" class="w-16 h-16 rounded-[24px] border-2 border-current/10 bg-white/5 object-cover shadow-2xl">
-                                <div class="space-y-1">
-                                    <h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${appData.cardHolder}</h2>
-                                    <p class="text-[10px] opacity-70 uppercase tracking-widest font-bold">${appData.brandTitle}</p>
-                                </div>
-                            </div>
-                            <div class="mt-auto pt-6 border-t border-current/10 text-[9px] mono opacity-40 uppercase tracking-widest">ID_${currentCardId}</div>
+                    <div class="flex flex-col gap-8 items-center">
+                        <div id="card-front" class="w-[360px] h-[210px] rounded-[30px] flex flex-col p-10 shadow-2xl" style="background-color: ${appData.cardColor}; color: ${appData.textColor}; font-family: ${appData.font}">
+                            <img src="${appData.profilePic}" class="w-12 h-12 rounded-xl mb-4 object-cover">
+                            <h2 class="text-3xl font-black italic uppercase leading-none">${appData.cardHolder}</h2>
                         </div>
-                        <div id="card-back" class="w-[360px] h-[210px] bg-white rounded-[30px] flex items-center p-8 border-2 border-zinc-100 shadow-2xl relative">
-                            <div class="w-32 h-32 bg-black p-3 rounded-[28px] ring-4 ring-zinc-50"><img src="${qrUrl}" class="w-full h-full rounded-lg"></div>
-                            <div class="flex-1 pl-10 space-y-4">
-                                <p class="text-black text-[10px] font-black uppercase tracking-widest opacity-80 underline decoration-yellow-500">Scan Matrix<br>Deploy Hub</p>
-                                <div class="pt-4 border-t border-zinc-100 font-black italic text-black tracking-tighter text-xl">VingaDeck Hub</div>
-                            </div>
+                        <div id="card-back" class="w-[360px] h-[210px] bg-white rounded-[30px] flex items-center p-8 shadow-2xl border border-zinc-100">
+                            <div class="w-28 h-28 bg-black p-2 rounded-2xl"><img src="${qrUrl}" class="w-full h-full"></div>
+                            <div class="pl-8 text-black text-[10px] font-black uppercase">Scan QR Hub</div>
                         </div>
                     </div>`;
             } else {
                 renderLinksList();
                 workspace.innerHTML = `
-                    <div class="relative w-full max-w-[480px] h-[520px] flex items-center justify-center perspective-1000">
-                        <div class="absolute bottom-10 w-60 h-60 bg-black/40 p-8 rounded-[60px] rotate-x-60 backdrop-blur-3xl border-2 border-white/5 flex items-center justify-center font-black text-white/5 tracking-[0.6em] text-3xl uppercase">Hiro</div>
-                        <div class="w-80 h-[340px] rounded-[50px] shadow-[0_0_120px_rgba(0,0,0,1)] flex flex-col p-10 border-2 transition-all duration-700 ease-out transform-gpu" 
-                             style="background-color: #030303; border-color: ${appData.themeColor}; transform: rotateX(${appData.tiltAngle}deg) translateY(-140px) scale(1.1); opacity: ${appData.panelOpacity}; box-shadow: 0 0 60px ${appData.themeColor}1a">
-                            <img src="${appData.profilePic}" class="w-16 h-16 rounded-[24px] bg-zinc-900 border-2 border-white/10 shadow-2xl mx-auto mb-4 object-cover">
-                            <h3 class="text-3xl font-black italic text-center uppercase heading-font mb-6 leading-none" style="color: ${appData.themeColor}">${appData.arTitle}</h3>
-                            <div class="relative flex-1">
-                                ${appData.links.map(l => `<div class="absolute w-24 h-10 rounded-xl flex items-center justify-center text-[7px] font-black uppercase text-white shadow-xl" style="background-color: ${l.color}; left: ${50 + l.x*25}%; top: ${50 + l.y*30}%">${l.label}</div>`).join('')}
-                            </div>
+                    <div class="relative w-80 h-[340px] rounded-[50px] shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col p-10 border-2" style="background-color: #030303; border-color: ${appData.themeColor}; transform: rotateX(${appData.tiltAngle}deg) translateY(-120px) scale(1.1); opacity: ${appData.panelOpacity}">
+                        <h3 class="text-2xl font-black italic text-center uppercase" style="color: ${appData.themeColor}">${appData.arTitle}</h3>
+                        <div class="relative flex-1">
+                            ${appData.links.map(l => `<div class="absolute w-20 h-8 rounded-lg flex items-center justify-center text-[7px] font-bold text-white shadow-xl" style="background-color: ${l.color}; left: ${50 + l.x*25}%; top: ${50 + l.y*30}%">${l.label}</div>`).join('')}
                         </div>
                     </div>`;
             }
         }
 
-        // Handle Re-Anchoring requests from the Iframe
-        function requestReAnchor() {
-            const arIframe = document.querySelector('#ar-iframe-container iframe');
-            if(arIframe) arIframe.contentWindow.postMessage('RE_ANCHOR', '*');
+        function launchAR() {
+            document.getElementById('view-ar-mode').classList.remove('hidden');
+            const linksHtml = appData.links.map(link => `<a-plane class="clickable" link-to="url: ${link.url}" position="${link.x} ${link.y} 0.1" width="1.4" height="0.4" color="${link.color}"><a-text value="${link.label}" align="center" color="white" width="3" font="exo2bold"></a-text></a-plane>`).join('');
+            document.getElementById('ar-iframe-container').innerHTML = `<iframe class="w-full h-full border-none" allow="camera; accelerometer; gyro;" srcDoc='
+                <!DOCTYPE html><html><head><script src="https://aframe.io/releases/1.3.0/aframe.min.js"><\/script><script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><\/script></head>
+                <body style="margin: 0; overflow: hidden;"><script>
+                    AFRAME.registerComponent("link-to", { schema: {url: {type:"string"}}, init: function() { this.el.addEventListener("click", () => window.open(this.data.url, "_blank")); } });
+                    AFRAME.registerComponent("pose-persistence", {
+                        init: function() { this.marker = document.querySelector("a-marker"); this.hologram = document.querySelector("#hologram-wrapper"); this.isFound = false; },
+                        tick: function() {
+                            if(this.marker.object3D.visible) {
+                                this.hologram.object3D.position.lerp(this.marker.object3D.position, 0.1);
+                                this.hologram.object3D.quaternion.slerp(this.marker.object3D.quaternion, 0.1);
+                                this.hologram.setAttribute("visible", true);
+                                if(!this.isFound) { this.isFound = true; window.parent.postMessage({found:true}, "*"); }
+                            } else if(this.isFound) { window.parent.postMessage({found:false}, "*"); }
+                        }
+                    });
+                <\/script>
+                <a-scene embedded arjs="debugUIEnabled:false; trackingMethod:best;" vr-mode-ui="enabled:false">
+                    <a-marker preset="hiro"><\/a-marker>
+                    <a-entity id="hologram-wrapper" pose-persistence visible="false">
+                        <a-entity position="0 0.6 -1" rotation="${appData.tiltAngle} 0 0">
+                            <a-plane width="3.4" height="2.8" color="#030303" opacity="${appData.panelOpacity}" transparent="true" radius="0.2">
+                                <a-text value="${appData.arTitle}" align="center" position="0 0.5 0.1" color="${appData.themeColor}" width="6" font="exo2bold"><\/a-text>
+                                <a-entity>${linksHtml.replace(/'/g, "&apos;")}<\/a-entity>
+                            <\/a-plane>
+                        <\/a-entity>
+                    <\/a-entity>
+                    <a-entity camera><a-entity cursor="rayOrigin:mouse" raycaster="objects:.clickable; interval:5;"><\/a-entity><\/a-entity>
+                <\/a-scene></body></html>'></iframe>`;
         }
 
-        // Listen for tracking status from AR Iframe
-        window.addEventListener('message', (e) => {
-            if(e.data.type === 'TRACKING_CHANGE') {
-                const dot = document.getElementById('tracking-dot');
-                const text = document.getElementById('tracking-text');
-                const reAnchorBtn = document.getElementById('re-anchor-btn');
-                
-                if(e.data.found) {
-                    dot.className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
-                    text.innerText = "Tracking Locked";
-                    reAnchorBtn.classList.add('hidden');
-                } else {
-                    dot.className = "w-2 h-2 rounded-full bg-yellow-500";
-                    text.innerText = "Persistence Mode";
-                    reAnchorBtn.classList.remove('hidden');
-                }
-            }
+        window.addEventListener('message', e => {
+            const dot = document.getElementById('tracking-dot'), text = document.getElementById('tracking-text');
+            if(e.data.found) { dot.className = "w-2 h-2 rounded-full bg-green-500 animate-pulse"; text.innerText = "LOCKED"; }
+            else { dot.className = "w-2 h-2 rounded-full bg-yellow-500"; text.innerText = "PERSISTENCE"; }
         });
 
-        function launchAR() {
-            const arOverlay = document.getElementById('view-ar-mode');
-            arOverlay.classList.remove('hidden');
-            const linksHtml = appData.links.map((link) => {
-                return `<a-plane class="clickable" link-to="url: ${link.url}" position="${link.x} ${link.y} 0.1" width="1.5" height="0.4" color="${link.color}"><a-text value="${link.label}" align="center" color="white" width="3" font="exo2bold"></a-text></a-plane>`;
-            }).join('');
-            
-            document.getElementById('ar-iframe-container').innerHTML = `<iframe class="w-full h-full border-none" allow="camera; accelerometer; gyro; magnetometer;" srcDoc='
-                <!DOCTYPE html><html><head><script src="https://aframe.io/releases/1.3.0/aframe.min.js"><\/script><script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><\/script></head>
-                <body style="margin: 0; overflow: hidden;">
-                    <script>
-                        AFRAME.registerComponent("link-to", {
-                            schema: { url: {type: "string"} },
-                            init: function () {
-                                this.el.addEventListener("click", function() { window.open(this.data.url, "_blank"); }.bind(this));
-                            }
-                        });
-
-                        AFRAME.registerComponent("pose-persistence", {
-                            init: function () {
-                                this.marker = document.querySelector("a-marker");
-                                this.hologram = document.querySelector("#hologram-wrapper");
-                                this.isAnchored = false;
-                                
-                                window.addEventListener("message", (e) => {
-                                    if(e.data === "RE_ANCHOR") this.isAnchored = false;
-                                });
-                            },
-                            tick: function () {
-                                const visible = this.marker.object3D.visible;
-                                
-                                if (visible) {
-                                    // Use simple Lerp to follow marker smoothly
-                                    this.hologram.object3D.position.lerp(this.marker.object3D.position, 0.2);
-                                    this.hologram.object3D.quaternion.slerp(this.marker.object3D.quaternion, 0.2);
-                                    this.hologram.setAttribute("visible", true);
-                                    
-                                    if(!this.isAnchored) {
-                                        this.isAnchored = true;
-                                        window.parent.postMessage({type: "TRACKING_CHANGE", found: true}, "*");
-                                    }
-                                } else {
-                                    if(this.isAnchored) {
-                                        this.isAnchored = false;
-                                        window.parent.postMessage({type: "TRACKING_CHANGE", found: false}, "*");
-                                    }
-                                }
-                            }
-                        });
-                    <\/script>
-                    <a-scene embedded arjs="debugUIEnabled: false; trackingMethod: best; precision: mediump;">
-                        <a-marker preset="hiro" emitevents="true"><\/a-marker>
-                        
-                        <a-entity id="hologram-wrapper" pose-persistence visible="false">
-                            <a-entity position="0 0.7 -1.2" rotation="${appData.tiltAngle} 0 0">
-                                <a-plane width="3.6" height="3" color="#030303" opacity="${appData.panelOpacity}" transparent="true" radius="0.3">
-                                    <a-image src="${appData.profilePic}" position="0 1.1 0.1" width="0.75" height="0.75"><\/a-image>
-                                    <a-text value="${appData.arTitle}" align="center" position="0 0.55 0.1" color="${appData.themeColor}" width="6.5" font="exo2bold"><\/a-text>
-                                    <a-entity>${linksHtml.replace(/'/g, "&apos;")}<\/a-entity>
-                                <\/a-plane>
-                                <a-torus-knot radius="0.15" radius-tubular="0.01" position="1.6 1.2 0.2" color="${appData.themeColor}" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000"><\/a-torus-knot>
-                            <\/a-entity>
-                        <\/a-entity>
-
-                        <a-entity camera>
-                            <!-- Optimization: Fast raycaster interval for better touch response -->
-                            <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; interval: 10;"></a-entity>
-                        <\/a-entity>
-                    <\/a-scene>
-                </body></html>'></iframe>`;
-        }
-
         function closeAR() { document.getElementById('view-ar-mode').classList.add('hidden'); document.getElementById('ar-iframe-container').innerHTML = ''; }
-
-        function showToast(msg, type) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            document.getElementById('toast-icon').innerHTML = type === 'success' ? '<i data-lucide="check-circle" class="text-green-500"></i>' : '<i data-lucide="alert-circle" class="text-red-500"></i>';
-            lucide.createIcons();
-            toast.classList.remove('translate-x-full');
-            setTimeout(() => toast.classList.add('translate-x-full'), 4000);
-        }
-
-        async function checkUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            if (id) {
-                currentCardId = id;
-                const { data } = await supabaseClient.from('cards').select('*').eq('id', id).single();
-                if (data) { 
-                    appData = data.config; 
-                    ownerId = data.user_id;
-                    params.get('view') === 'ar' ? launchAR() : navigateTo('studio'); 
-                } else {
-                    navigateTo('landing');
-                }
-            } else {
-                navigateTo('landing');
-            }
-        }
-
-        function copyPublicLink() {
-            const url = window.location.href.split('?')[0] + "?id=" + currentCardId;
-            navigator.clipboard.writeText(url).then(() => showToast("URL Copied", "success"));
-        }
+        function showToast(m, t) { const d = document.getElementById('toast'); document.getElementById('toast-msg').innerText = m; d.classList.remove('translate-x-full'); setTimeout(() => d.classList.add('translate-x-full'), 3000); }
+        async function checkUrlParams() { const p = new URLSearchParams(window.location.search); const id = p.get('id'); if(id) { currentCardId = id; const {data} = await supabaseClient.from('cards').select('*').eq('id', id).single(); if(data) { appData = data.config; ownerId = data.user_id; p.get('view') === 'ar' ? launchAR() : navigateTo('studio'); } } }
     </script>
 </body>
 </html>
