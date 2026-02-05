@@ -27,9 +27,10 @@
         /* Mobile Vertical Scrolling Fix */
         @media (max-width: 768px) {
             #view-studio, #view-dashboard { height: auto !important; overflow: visible !important; }
-            main { flex-direction: column !important; overflow: visible !important; }
-            aside { height: auto !important; overflow: visible !important; border-bottom: 1px solid #27272a; }
+            main { flex-direction: column !important; overflow: visible !important; height: auto !important; }
+            aside { height: auto !important; overflow: visible !important; border-bottom: 1px solid #27272a; width: 100% !important; }
             #preview-workspace { margin-top: 40px; margin-bottom: 120px; }
+            section { min-height: 600px !important; }
         }
 
         .perspective-1000 { perspective: 1000px; }
@@ -42,12 +43,13 @@
             @page { size: 3.5in 2in; margin: 0; }
             body { background: white !important; color: black !important; }
             .no-print { display: none !important; }
-            #preview-workspace { transform: none !important; }
+            #preview-workspace { transform: none !important; display: block !important; width: 3.5in !important; }
             #card-front, #card-back { 
                 width: 3.5in !important; height: 2in !important; 
                 margin: 0 !important; padding: 0.3in !important;
                 page-break-after: always; border: 1px solid #eee !important;
                 border-radius: 0 !important; -webkit-print-color-adjust: exact;
+                position: relative !important; top: 0 !important; left: 0 !important;
             }
         }
 
@@ -58,7 +60,7 @@
         input[type="range"] { appearance: none; background: #27272a; height: 4px; border-radius: 5px; width: 100%; }
         input[type="range"]::-webkit-slider-thumb {
             appearance: none; width: 14px; height: 14px; background: var(--brand-yellow);
-            border-radius: 50%; cursor: pointer; border: 2px solid #09090b;
+            border-radius: 50%; cursor: pointer; border: 3px solid #09090b;
         }
 
         .tab-active { color: var(--brand-yellow); border-bottom: 3px solid var(--brand-yellow); background: rgba(255,255,255,0.03); }
@@ -118,6 +120,27 @@
         </div>
     </div>
 
+    <!-- SHOWCASE VIEW -->
+    <div id="view-showcase" class="hidden-view no-print p-6">
+        <div class="max-w-6xl mx-auto py-20 text-center">
+             <h2 class="text-4xl font-black mb-10 uppercase tracking-tighter">Design <span class="text-yellow-500">Showcase</span></h2>
+             <div class="grid md:grid-cols-2 gap-8">
+                 <div class="glass p-10 rounded-[40px] text-left">
+                     <img src="https://api.dicebear.com/7.x/shapes/svg?seed=Creative" class="h-40 mb-6" alt="Creative Template" />
+                     <h3 class="text-2xl font-bold mb-2 text-white">Creative Director</h3>
+                     <p class="text-zinc-500 mb-6 italic">Sleek, minimalist design.</p>
+                     <button onclick="startFreeCard()" class="text-yellow-500 font-bold uppercase text-xs tracking-widest border-b border-yellow-500 pb-1">Use Template</button>
+                 </div>
+                 <div class="glass p-10 rounded-[40px] text-left">
+                     <img src="https://api.dicebear.com/7.x/shapes/svg?seed=Tech" class="h-40 mb-6" alt="Tech Template" />
+                     <h3 class="text-2xl font-bold mb-2 text-white">Engineering Hub</h3>
+                     <p class="text-zinc-500 mb-6 italic">High-performance tech layout.</p>
+                     <button onclick="startFreeCard()" class="text-yellow-500 font-bold uppercase text-xs tracking-widest border-b border-yellow-500 pb-1">Use Template</button>
+                 </div>
+             </div>
+        </div>
+    </div>
+
     <!-- DASHBOARD VIEW -->
     <div id="view-dashboard" class="hidden-view no-print p-6 md:p-16">
         <div class="max-w-6xl mx-auto">
@@ -133,7 +156,6 @@
     <!-- STUDIO VIEW -->
     <div id="view-studio" class="hidden-view min-h-screen flex flex-col no-print bg-[#080808]">
         <main class="flex-1 flex flex-col md:flex-row h-full">
-            <!-- Sidebar Editor -->
             <aside id="studio-sidebar" class="w-full md:w-[380px] border-r border-zinc-800 bg-zinc-900/50 flex flex-col scrollbar-hide md:h-full md:overflow-y-auto">
                 <div class="flex border-b border-zinc-800 sticky top-0 bg-zinc-900 z-30">
                     <button onclick="switchTab('physical')" id="tab-physical" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest tab-active">Designer</button>
@@ -152,11 +174,19 @@
                             <option value="Exo 2">Exo 2</option>
                             <option value="Inter">Inter</option>
                             <option value="Outfit">Outfit</option>
+                            <option value="JetBrains Mono">JetBrains Mono</option>
                         </select>
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="color" id="input-cardColor" oninput="updateData('cardColor', this.value)" class="w-full h-10 rounded-xl cursor-pointer">
-                            <input type="color" id="input-textColor" oninput="updateData('textColor', this.value)" class="w-full h-10 rounded-xl cursor-pointer">
+                            <div>
+                                <label class="text-[8px] uppercase font-black mb-1 block">Backing</label>
+                                <input type="color" id="input-cardColor" oninput="updateData('cardColor', this.value)" class="w-full h-10 rounded-xl cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="text-[8px] uppercase font-black mb-1 block">Ink</label>
+                                <input type="color" id="input-textColor" oninput="updateData('textColor', this.value)" class="w-full h-10 rounded-xl cursor-pointer">
+                            </div>
                         </div>
+                        <input type="text" id="input-profilePic" oninput="updateData('profilePic', this.value)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs mono" placeholder="Avatar URL">
                     </div>
 
                     <div id="section-ar" class="hidden space-y-6">
@@ -176,16 +206,20 @@
                 </div>
 
                 <div class="mt-auto p-6 bg-zinc-950 border-t border-zinc-800 flex justify-between items-center sticky bottom-0 z-40">
-                    <div id="db-status-text" class="text-[9px] font-black uppercase text-zinc-600">Ready</div>
-                    <button onclick="saveExperience()" id="save-btn" class="bg-yellow-500 text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Sync Vault</button>
+                    <div class="flex items-center gap-2">
+                        <div id="db-status-dot" class="w-2 h-2 rounded-full bg-zinc-600"></div>
+                        <span id="db-status-text" class="text-[9px] font-black uppercase text-zinc-600 tracking-tighter">Status</span>
+                    </div>
+                    <button onclick="saveExperience()" id="save-btn" class="bg-yellow-500 text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-20">Sync Matrix</button>
                 </div>
             </aside>
 
-            <!-- Preview Space -->
-            <section class="flex-1 bg-[#050505] flex flex-col items-center justify-center p-4 relative min-h-[500px]">
+            <section class="flex-1 bg-[#050505] flex flex-col items-center justify-center p-4 relative min-h-[600px]">
                 <div id="preview-workspace" class="relative flex flex-col items-center scale-[0.65] sm:scale-75 md:scale-90 lg:scale-100"></div>
                 <div id="studio-toolbar" class="absolute bottom-8 flex gap-3 justify-center w-full px-4 no-print">
-                    <button onclick="launchAR()" class="btn-primary px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl">Launch Matrix</button>
+                    <button onclick="launchAR()" class="btn-primary px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl flex items-center gap-2">
+                        <i data-lucide="eye" class="w-4 h-4"></i> Launch AR
+                    </button>
                     <button onclick="window.print()" class="bg-zinc-800 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase">Export PDF</button>
                 </div>
             </section>
@@ -193,15 +227,15 @@
     </div>
 
     <!-- AR VIEWPORT -->
-    <div id="view-ar-mode" class="fixed inset-0 z-[500] bg-black hidden">
+    <div id="view-ar-mode" class="fixed inset-0 z-[500] bg-black hidden flex flex-col">
         <div class="absolute top-8 left-8 z-[510] flex items-center gap-4">
-            <button onclick="closeAR()" class="bg-zinc-900/90 backdrop-blur-xl text-white px-6 py-4 rounded-[28px] text-[10px] font-black border border-white/10">EXIT</button>
-            <div id="tracking-status" class="bg-zinc-900/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
+            <button onclick="closeAR()" class="bg-zinc-900/90 backdrop-blur-xl text-white px-6 py-4 rounded-[28px] text-[10px] font-black border border-white/10 uppercase tracking-widest">EXIT</button>
+            <div class="bg-zinc-900/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
                 <div id="tracking-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
-                <span id="tracking-text" class="text-[9px] font-black uppercase text-zinc-400 tracking-tighter">Scanning...</span>
+                <span id="tracking-text" class="text-[9px] font-black uppercase text-zinc-400">Scanning...</span>
             </div>
         </div>
-        <div id="ar-iframe-container" class="w-full h-full"></div>
+        <div id="ar-iframe-container" class="flex-1"></div>
     </div>
 
     <!-- AUTH VIEW -->
@@ -212,11 +246,11 @@
                 <input type="email" id="auth-email" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white" placeholder="Email">
                 <input type="password" id="auth-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white" placeholder="Password">
                 <button type="submit" id="auth-submit" class="btn-primary w-full py-4 rounded-xl flex justify-center items-center gap-3">
-                    <span id="auth-btn-text">Authorize</span>
+                    <span id="auth-btn-text">Authorize Identity</span>
                     <div id="auth-loader" class="hidden w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                 </button>
             </form>
-            <button onclick="toggleAuthMode()" id="auth-toggle" class="w-full mt-6 text-[10px] uppercase font-black text-zinc-500">Switch to Signup</button>
+            <button onclick="toggleAuthMode()" id="auth-toggle" class="w-full mt-6 text-[10px] uppercase font-black text-zinc-500">Switch View</button>
         </div>
     </div>
 
@@ -227,7 +261,7 @@
 
         let user = null, ownerId = null, currentCardId = null;
         let authMode = 'login', currentTab = 'physical';
-        let appData = { cardHolder: "NEW HUB USER", brandTitle: "IDENTITY", font: "Exo 2", cardColor: "#ffffff", textColor: "#000000", profilePic: "https://api.dicebear.com/7.x/shapes/svg?seed=Hub", arTitle: "AR PORTAL", panelOpacity: 0.9, tiltAngle: -60, links: [{ label: "WEBSITE", url: "https://", color: "#222222", x: 0, y: -0.5 }] };
+        let appData = { cardHolder: "NEW USER", brandTitle: "IDENTITY", font: "Exo 2", cardColor: "#ffffff", textColor: "#000000", profilePic: "https://api.dicebear.com/7.x/shapes/svg?seed=Hub", arTitle: "AR PORTAL", panelOpacity: 0.9, tiltAngle: -60, links: [{ label: "WEBSITE", url: "https://", color: "#222222", x: 0, y: -0.5 }] };
 
         window.onload = async () => {
             lucide.createIcons();
@@ -237,27 +271,44 @@
             checkUrlParams();
         };
 
+        function updateNav() {
+            const guestNav = document.getElementById('nav-guest');
+            const userNav = document.getElementById('nav-user');
+            if (guestNav) guestNav.classList.toggle('hidden', !!user);
+            if (userNav) userNav.classList.toggle('hidden', !user);
+        }
+
         function navigateTo(viewName) {
-            ['landing', 'auth', 'dashboard', 'studio', 'showcase'].forEach(v => {
+            const views = ['landing', 'auth', 'dashboard', 'studio', 'showcase'];
+            views.forEach(v => {
                 const el = document.getElementById('view-' + v);
                 if (el) el.classList.add('hidden-view');
             });
+
             if (viewName === 'login' || viewName === 'signup') {
-                document.getElementById('view-auth').classList.remove('hidden-view');
-                authMode = viewName; toggleAuthMode();
+                const authEl = document.getElementById('view-auth');
+                if(authEl) authEl.classList.remove('hidden-view');
+                authMode = viewName;
+                toggleAuthMode();
             } else {
                 const target = document.getElementById('view-' + viewName);
                 if (target) target.classList.remove('hidden-view');
+                else document.getElementById('view-landing').classList.remove('hidden-view');
             }
+
             if (viewName === 'dashboard') loadDecks();
             if (viewName === 'studio') renderStudio();
             lucide.createIcons();
+            window.scrollTo(0,0);
         }
 
         function toggleAuthMode() {
-            const isLogin = authMode === 'login';
-            document.getElementById('auth-title').innerText = isLogin ? 'Verify Identity' : 'Nexus Registry';
-            document.getElementById('auth-btn-text').innerText = isLogin ? 'Authorize' : 'Join';
+            const title = document.getElementById('auth-title');
+            const toggleBtn = document.getElementById('auth-toggle');
+            const btnText = document.getElementById('auth-btn-text');
+            if(title) title.innerText = authMode === 'login' ? 'Login' : 'Signup';
+            if(toggleBtn) toggleBtn.innerText = authMode === 'login' ? "New member? Register" : "Have access? Login";
+            if(btnText) btnText.innerText = authMode === 'login' ? 'Authorize Identity' : 'Create Identity';
         }
 
         async function handleAuth(e) {
@@ -265,14 +316,33 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const loader = document.getElementById('auth-loader'), btnText = document.getElementById('auth-btn-text');
-            loader.classList.remove('hidden'); btnText.classList.add('hidden');
+            if(loader) loader.classList.remove('hidden');
+            if(btnText) btnText.classList.add('hidden');
+
             try {
-                let res = (authMode === 'login') ? await supabaseClient.auth.signInWithPassword({ email, password }) : await supabaseClient.auth.signUp({ email, password });
+                let res = (authMode === 'login') 
+                    ? await supabaseClient.auth.signInWithPassword({ email, password })
+                    : await supabaseClient.auth.signUp({ email, password });
+
                 if (res.error) throw res.error;
-                if (res.data.session) { user = res.data.user; updateNav(); navigateTo('dashboard'); }
-                else { showToast("Sign Up successful. You can log in.", "success"); navigateTo('login'); }
+                if (res.data.session) {
+                    user = res.data.user;
+                    updateNav();
+                    navigateTo('dashboard');
+                    showToast("Verified", "success");
+                } else {
+                    showToast("Profile Created. Check email if required.", "success");
+                    navigateTo('login');
+                }
             } catch (err) { showToast(err.message, "error"); }
-            finally { loader.classList.add('hidden'); btnText.classList.remove('hidden'); }
+            finally { if(loader) loader.classList.add('hidden'); if(btnText) btnText.classList.remove('hidden'); }
+        }
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            user = null;
+            updateNav();
+            navigateTo('landing');
         }
 
         async function loadDecks() {
@@ -283,23 +353,56 @@
                 <div class="glass p-6 rounded-[30px] border border-white/5 hover:border-yellow-500/50 transition-all">
                     <h4 class="font-black text-white mb-6 uppercase text-xs truncate">${deck.config.cardHolder}</h4>
                     <div class="flex gap-2">
-                        <button onclick="editDeck('${deck.id}')" class="flex-1 bg-zinc-800 text-[10px] font-black uppercase py-3 rounded-xl">Edit</button>
-                        <button onclick="deleteDeck('${deck.id}')" class="p-3 text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="editDeck('${deck.id}')" class="flex-1 bg-zinc-800 text-[9px] font-black uppercase py-3 rounded-xl">Studio</button>
+                        <button onclick="deleteDeck('${deck.id}')" class="p-3 text-red-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                     </div>
                 </div>`).join('');
-            document.getElementById('decks-empty').classList.toggle('hidden', data?.length > 0);
+            const empty = document.getElementById('decks-empty');
+            if(empty) empty.classList.toggle('hidden', data?.length > 0);
             lucide.createIcons();
         }
+
+        async function editDeck(id) { window.location.search = `?id=${id}`; }
+
+        async function deleteDeck(id) {
+            if (!confirm("Permanent Deletion?")) return;
+            await supabaseClient.from('cards').delete().eq('id', id);
+            loadDecks();
+        }
+
+        function createNewDeck() {
+            currentCardId = Math.random().toString(36).substring(2, 9).toUpperCase();
+            appData = { ...appData }; 
+            navigateTo('studio');
+        }
+
+        function startFreeCard() { user ? navigateTo('dashboard') : navigateTo('signup'); }
 
         function renderStudio() {
             syncInputs();
             const isOwner = user && user.id === ownerId;
-            document.getElementById('db-status-text').innerText = isOwner ? "Master Mode" : "Preview Mode";
-            document.getElementById('save-btn').disabled = !isOwner && ownerId;
+            const dot = document.getElementById('db-status-dot');
+            const text = document.getElementById('db-status-text');
+            const saveBtn = document.getElementById('save-btn');
+            const badge = document.getElementById('user-role-badge');
+            
+            if (isOwner || !ownerId) {
+                if(dot) dot.className = "w-2 h-2 rounded-full bg-green-500";
+                if(text) text.innerText = ownerId ? "Creator Mode" : "Initial Draft";
+                if(saveBtn) saveBtn.disabled = false;
+                if(badge) badge.innerHTML = '<span class="owner-badge">Creator Access</span>';
+                document.querySelectorAll('#studio-sidebar input, #studio-sidebar select').forEach(el => el.disabled = false);
+            } else {
+                if(dot) dot.className = "w-2 h-2 rounded-full bg-blue-500";
+                if(text) text.innerText = "Visitor View";
+                if(saveBtn) saveBtn.disabled = true;
+                if(badge) badge.innerHTML = '<span class="visitor-badge">Read Only</span>';
+                document.querySelectorAll('#studio-sidebar input, #studio-sidebar select').forEach(el => el.disabled = true);
+            }
             renderUI();
         }
 
-        function updateData(key, value) { appData[key] = value; renderUI(); }
+        function updateData(key, value) { appData[key] = value; if (key === 'tiltAngle') document.getElementById('tilt-value').innerText = value + "°"; renderUI(); }
         function syncInputs() { ['cardHolder', 'brandTitle', 'font', 'profilePic', 'cardColor', 'textColor', 'arTitle', 'tiltAngle'].forEach(f => { const el = document.getElementById('input-' + f); if(el) el.value = appData[f] || ""; }); }
         function switchTab(tab) {
             currentTab = tab;
@@ -311,8 +414,10 @@
         }
 
         function renderLinksList() {
-            document.getElementById('links-container').innerHTML = appData.links.map((link, idx) => `
-                <div class="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-3 relative">
+            const container = document.getElementById('links-container');
+            if(!container) return;
+            container.innerHTML = appData.links.map((link, idx) => `
+                <div class="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-3 relative shadow-2xl">
                     <button onclick="removeLink(${idx})" class="absolute top-2 right-2 text-zinc-600"><i data-lucide="x" class="w-3 h-3"></i></button>
                     <input type="text" value="${link.label}" oninput="updateLink(${idx}, 'label', this.value.toUpperCase())" class="w-full bg-transparent text-[10px] font-bold text-yellow-500 outline-none">
                     <input type="range" min="-1.5" max="1.5" step="0.1" value="${link.x}" oninput="updateLink(${idx}, 'x', parseFloat(this.value))">
@@ -328,79 +433,98 @@
             if (!user) { navigateTo('login'); return; }
             try {
                 await supabaseClient.from('cards').upsert({ id: currentCardId, user_id: user.id, config: appData, updated_at: new Date().toISOString() });
-                showToast("Nexus Synced", "success");
+                ownerId = user.id;
+                showToast("Experience Clouded", "success");
+                updateStudioStatus();
             } catch (e) { showToast("Sync Fault", "error"); }
         }
 
         function renderUI() {
             const workspace = document.getElementById('preview-workspace');
+            if(!workspace) return;
             const cardUrl = window.location.href.split('?')[0] + "?id=" + currentCardId;
             const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(cardUrl + "&view=ar") + "&size=300x300&bgcolor=ffffff";
             if (currentTab === 'physical') {
                 workspace.innerHTML = `
-                    <div class="flex flex-col gap-8 items-center">
-                        <div id="card-front" class="w-[360px] h-[210px] rounded-[30px] flex flex-col p-10 shadow-2xl" style="background-color: ${appData.cardColor}; color: ${appData.textColor}; font-family: ${appData.font}">
-                            <img src="${appData.profilePic}" class="w-12 h-12 rounded-xl mb-4 object-cover">
-                            <h2 class="text-3xl font-black italic uppercase leading-none">${appData.cardHolder}</h2>
+                    <div class="flex flex-col gap-12 items-center w-full max-w-sm">
+                        <div id="card-front" class="w-[360px] h-[210px] rounded-[40px] shadow-2xl relative overflow-hidden flex flex-col p-10 border border-white/10" style="background-color: ${appData.cardColor}; color: ${appData.textColor}; font-family: ${appData.font}">
+                            <img src="${appData.profilePic}" class="w-16 h-16 rounded-[24px] border-2 border-current/10 bg-white/5 object-cover mb-4">
+                            <h2 class="text-3xl font-black italic uppercase leading-none heading-font">${appData.cardHolder}</h2>
+                            <p class="text-[10px] opacity-70 uppercase tracking-widest">${appData.brandTitle}</p>
+                            <div class="mt-auto pt-4 text-[9px] mono opacity-40 uppercase">ID_${currentCardId}</div>
                         </div>
-                        <div id="card-back" class="w-[360px] h-[210px] bg-white rounded-[30px] flex items-center p-8 shadow-2xl border border-zinc-100">
-                            <div class="w-28 h-28 bg-black p-2 rounded-2xl"><img src="${qrUrl}" class="w-full h-full"></div>
-                            <div class="pl-8 text-black text-[10px] font-black uppercase">Scan QR Hub</div>
+                        <div id="card-back" class="w-[360px] h-[210px] bg-white rounded-[40px] shadow-2xl relative overflow-hidden flex items-center p-8 border-2 border-zinc-200">
+                            <div class="w-32 h-32 bg-black p-3 rounded-[28px]"><img src="${qrUrl}" class="w-full h-full rounded-lg"></div>
+                            <div class="flex-1 pl-10 space-y-4 text-black text-[10px] font-black uppercase">Scan Hub Matrix</div>
                         </div>
                     </div>`;
             } else {
                 renderLinksList();
                 workspace.innerHTML = `
-                    <div class="relative w-80 h-[340px] rounded-[50px] shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col p-10 border-2" style="background-color: #030303; border-color: ${appData.themeColor}; transform: rotateX(${appData.tiltAngle}deg) translateY(-120px) scale(1.1); opacity: ${appData.panelOpacity}">
-                        <h3 class="text-2xl font-black italic text-center uppercase" style="color: ${appData.themeColor}">${appData.arTitle}</h3>
-                        <div class="relative flex-1">
-                            ${appData.links.map(l => `<div class="absolute w-20 h-8 rounded-lg flex items-center justify-center text-[7px] font-bold text-white shadow-xl" style="background-color: ${l.color}; left: ${50 + l.x*25}%; top: ${50 + l.y*30}%">${l.label}</div>`).join('')}
+                    <div class="relative w-full max-w-[480px] h-[520px] flex items-center justify-center perspective-1000">
+                        <div class="absolute bottom-10 w-60 h-60 bg-black/40 p-8 rounded-[60px] rotate-x-60 backdrop-blur-3xl border-2 border-white/5 flex items-center justify-center font-black text-white/5 tracking-[0.6em] text-3xl uppercase">Hiro</div>
+                        <div class="w-80 h-[340px] rounded-[50px] shadow-[0_0_120px_rgba(0,0,0,0.8)] flex flex-col p-10 border-2" 
+                             style="background-color: #030303; border-color: ${appData.themeColor}; transform: rotateX(${appData.tiltAngle}deg) translateY(-120px) scale(1.1); opacity: ${appData.panelOpacity}; box-shadow: 0 0 60px ${appData.themeColor}1a">
+                            <img src="${appData.profilePic}" class="w-16 h-16 rounded-[24px] bg-zinc-900 border-2 border-white/10 shadow-2xl mx-auto mb-4 object-cover">
+                            <h3 class="text-2xl font-black italic text-center uppercase heading-font mb-2 leading-none" style="color: ${appData.themeColor}">${appData.arTitle}</h3>
+                            <div class="relative flex-1">
+                                ${appData.links.map(l => `<div class="absolute w-20 h-8 rounded-lg flex items-center justify-center text-[7px] font-black uppercase text-white" style="background-color: ${l.color}; left: ${50 + l.x*25}%; top: ${50 + l.y*30}%">${l.label}</div>`).join('')}
+                            </div>
                         </div>
                     </div>`;
             }
         }
 
         function launchAR() {
-            document.getElementById('view-ar-mode').classList.remove('hidden');
-            const linksHtml = appData.links.map(link => `<a-plane class="clickable" link-to="url: ${link.url}" position="${link.x} ${link.y} 0.1" width="1.4" height="0.4" color="${link.color}"><a-text value="${link.label}" align="center" color="white" width="3" font="exo2bold"></a-text></a-plane>`).join('');
-            document.getElementById('ar-iframe-container').innerHTML = `<iframe class="w-full h-full border-none" allow="camera; accelerometer; gyro;" srcDoc='
+            const arOverlay = document.getElementById('view-ar-mode');
+            const arContainer = document.getElementById('ar-iframe-container');
+            if(!arOverlay || !arContainer) return;
+            arOverlay.classList.remove('hidden');
+            const linksHtml = appData.links.map(link => `<a-plane class="clickable" link-to="url: ${link.url}" position="${link.x} ${link.y} 0.1" width="1.5" height="0.4" color="${link.color}"><a-text value="${link.label}" align="center" color="white" width="3" font="exo2bold"></a-text></a-plane>`).join('');
+            arContainer.innerHTML = `<iframe class="w-full h-full border-none" allow="camera; accelerometer; gyro; magnetometer; xr-spatial-tracking" srcDoc='
                 <!DOCTYPE html><html><head><script src="https://aframe.io/releases/1.3.0/aframe.min.js"><\/script><script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><\/script></head>
                 <body style="margin: 0; overflow: hidden;"><script>
                     AFRAME.registerComponent("link-to", { schema: {url: {type:"string"}}, init: function() { this.el.addEventListener("click", () => window.open(this.data.url, "_blank")); } });
-                    AFRAME.registerComponent("pose-persistence", {
-                        init: function() { this.marker = document.querySelector("a-marker"); this.hologram = document.querySelector("#hologram-wrapper"); this.isFound = false; },
+                    AFRAME.registerComponent("spatial-anchor", {
+                        init: function() { this.marker = document.querySelector("a-marker"); this.hologram = document.querySelector("#hologram-wrapper"); this.lastFound = false; },
                         tick: function() {
                             if(this.marker.object3D.visible) {
-                                this.hologram.object3D.position.lerp(this.marker.object3D.position, 0.1);
-                                this.hologram.object3D.quaternion.slerp(this.marker.object3D.quaternion, 0.1);
+                                this.hologram.object3D.position.lerp(this.marker.object3D.position, 0.2);
+                                this.hologram.object3D.quaternion.slerp(this.marker.object3D.quaternion, 0.2);
                                 this.hologram.setAttribute("visible", true);
-                                if(!this.isFound) { this.isFound = true; window.parent.postMessage({found:true}, "*"); }
-                            } else if(this.isFound) { window.parent.postMessage({found:false}, "*"); }
+                                if(!this.lastFound) { this.lastFound = true; window.parent.postMessage({found:true}, "*"); }
+                            } else {
+                                if(this.lastFound) { window.parent.postMessage({found:false}, "*"); }
+                            }
                         }
                     });
                 <\/script>
                 <a-scene embedded arjs="debugUIEnabled:false; trackingMethod:best;" vr-mode-ui="enabled:false">
                     <a-marker preset="hiro"><\/a-marker>
-                    <a-entity id="hologram-wrapper" pose-persistence visible="false">
-                        <a-entity position="0 0.6 -1" rotation="${appData.tiltAngle} 0 0">
-                            <a-plane width="3.4" height="2.8" color="#030303" opacity="${appData.panelOpacity}" transparent="true" radius="0.2">
-                                <a-text value="${appData.arTitle}" align="center" position="0 0.5 0.1" color="${appData.themeColor}" width="6" font="exo2bold"><\/a-text>
+                    <a-entity id="hologram-wrapper" spatial-anchor visible="false">
+                        <a-entity position="0 0.7 -1.2" rotation="${appData.tiltAngle} 0 0">
+                            <a-plane width="3.6" height="3" color="#030303" opacity="${appData.panelOpacity}" transparent="true" radius="0.3">
+                                <a-image src="${appData.profilePic}" position="0 1.1 0.1" width="0.75" height="0.75" radius="0.1"><\/a-image>
+                                <a-text value="${appData.arTitle}" align="center" position="0 0.55 0.1" color="${appData.themeColor}" width="6.5" font="exo2bold"><\/a-text>
                                 <a-entity>${linksHtml.replace(/'/g, "&apos;")}<\/a-entity>
                             <\/a-plane>
+                            <a-torus-knot radius="0.15" radius-tubular="0.01" position="1.6 1.2 0.2" color="${appData.themeColor}" animation="property: rotation; to: 0 360 0; loop: true; dur: 6000"><\/a-torus-knot>
                         <\/a-entity>
                     <\/a-entity>
-                    <a-entity camera><a-entity cursor="rayOrigin:mouse" raycaster="objects:.clickable; interval:5;"><\/a-entity><\/a-entity>
+                    <a-entity camera><a-entity cursor="rayOrigin:mouse" raycaster="objects:.clickable; interval:5;"></a-entity><\/a-entity>
                 <\/a-scene></body></html>'></iframe>`;
         }
 
         window.addEventListener('message', e => {
             const dot = document.getElementById('tracking-dot'), text = document.getElementById('tracking-text');
+            if(!dot || !text) return;
             if(e.data.found) { dot.className = "w-2 h-2 rounded-full bg-green-500 animate-pulse"; text.innerText = "LOCKED"; }
-            else { dot.className = "w-2 h-2 rounded-full bg-yellow-500"; text.innerText = "PERSISTENCE"; }
+            else { dot.className = "w-2 h-2 rounded-full bg-yellow-500"; text.innerText = "ANCHORED"; }
         });
 
-        function closeAR() { document.getElementById('view-ar-mode').classList.add('hidden'); document.getElementById('ar-iframe-container').innerHTML = ''; }
-        function showToast(m, t) { const d = document.getElementById('toast'); document.getElementById('toast-msg').innerText = m; d.classList.remove('translate-x-full'); setTimeout(() => d.classList.add('translate-x-full'), 3000); }
+        function closeAR() { const ar = document.getElementById('view-ar-mode'); if(ar) ar.classList.add('hidden'); document.getElementById('ar-iframe-container').innerHTML = ''; }
+        function showToast(msg, type) { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.remove('translate-x-full'); setTimeout(() => t.classList.add('translate-x-full'), 3000); }
+        function copyPublicLink() { const url = window.location.href.split('?')[0] + "?id=" + currentCardId; navigator.clipboard.writeText(url).then(() => showToast("URL Copied", "success")); }
         async function checkUrlParams() { const p = new URLSearchParams(window.location.search); const id = p.get('id'); if(id) { currentCardId = id; const {data} = await supabaseClient.from('cards').select('*').eq('id', id).single(); if(data) { appData = data.config; ownerId = data.user_id; p.get('view') === 'ar' ? launchAR() : navigateTo('studio'); } } }
     </script>
 </body>
